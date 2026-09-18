@@ -2,22 +2,13 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RoleIcon } from "@/components/RoleIcons";
 import {
   STAFF_ROLES,
   validateStaffPayload,
   type FieldErrors,
   type StaffRoleId,
 } from "@/lib/staff";
-
-const ROLE_ICONS: Record<StaffRoleId, string> = {
-  RACCHETTA_PALLE: "🎾",
-  CASSA: "💶",
-  INTERVISTE: "🎤",
-  GIORNALE: "📰",
-  FOTOGRAFIA: "📷",
-  SOCIAL: "📱",
-  BUTTA_FUORI: "🛡️",
-};
 
 type FormState = {
   firstName: string;
@@ -211,8 +202,13 @@ export function StaffForm() {
                 }`}
                 aria-pressed={selected}
               >
-                <span aria-hidden className="text-lg">
-                  {ROLE_ICONS[role.id]}
+                <span
+                  aria-hidden
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                    selected ? "bg-navy/10" : "bg-white/10"
+                  }`}
+                >
+                  <RoleIcon role={role.id} />
                 </span>
                 <span className="text-sm font-semibold leading-tight">
                   {role.label}
