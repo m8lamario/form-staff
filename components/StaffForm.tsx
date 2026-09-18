@@ -56,6 +56,12 @@ function stepClass(
   return `${mobile} ${desktop}`;
 }
 
+function stepsClass(current: FormStepIndex, steps: FormStepIndex[]) {
+  return steps.includes(current)
+    ? "flex min-h-0 flex-1 flex-col lg:flex-none"
+    : "hidden lg:flex lg:flex-none lg:flex-col";
+}
+
 export function StaffForm() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
@@ -162,10 +168,10 @@ export function StaffForm() {
   return (
     <form
       onSubmit={onSubmit}
-      className="flex h-full min-h-0 flex-col rounded-[24px] border border-white/15 bg-white/10 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.18)] backdrop-blur-sm lg:p-7"
+      className="flex h-full min-h-0 flex-col overflow-hidden rounded-[28px] border border-white/15 bg-white/10 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-6 lg:px-6 lg:py-5 xl:px-8 xl:py-6"
       noValidate
     >
-      <div className="mb-3 shrink-0 lg:hidden">
+      <div className="mb-5 shrink-0 lg:hidden">
         <div
           className="flex gap-1.5"
           role="progressbar"
@@ -177,11 +183,11 @@ export function StaffForm() {
           {FORM_STEPS.map((item, index) => (
             <span
               key={item.title}
-              className={`h-1 flex-1 rounded-full ${index <= step ? "bg-mint" : "bg-white/20"}`}
+              className={`h-1.5 flex-1 rounded-full ${index <= step ? "bg-mint" : "bg-white/20"}`}
             />
           ))}
         </div>
-        <p className="mt-2 text-[11px] uppercase tracking-[0.22em] text-mint">
+        <p className="mt-3 text-[11px] uppercase tracking-[0.22em] text-mint">
           Passo {step + 1} di {FORM_STEPS.length} · {currentStep.title}
         </p>
       </div>
@@ -189,31 +195,29 @@ export function StaffForm() {
       {submitError ? (
         <p
           role="alert"
-          className="mb-3 shrink-0 rounded-2xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white"
+          className="mb-5 shrink-0 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white"
         >
           {submitError}
         </p>
       ) : null}
 
-      <div className="flex min-h-0 flex-1 flex-col lg:justify-center lg:gap-3">
-        <div
-          className={`${
-            step < 3 ? "flex min-h-0 flex-1 flex-col" : "hidden"
-          } lg:flex lg:flex-none lg:flex-col lg:gap-3`}
-        >
-          <div className="hidden lg:block">
-            <h1 className="font-display text-4xl tracking-widest text-white uppercase xl:text-5xl">
-              Unisciti allo staff
-            </h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-white/75">
-              Lascia i tuoi dati, dicci se hai già fatto parte dello staff e
-              scegli il ruolo che preferisci.
-            </p>
-          </div>
+      <div className="flex min-h-0 flex-1 flex-col lg:gap-3 lg:overflow-hidden">
+        <header className="hidden shrink-0 lg:block">
+          <h1 className="font-display text-[1.75rem] tracking-[0.14em] text-white uppercase xl:text-3xl">
+            Unisciti allo staff
+          </h1>
+          <p className="mt-1 max-w-xl text-sm leading-5 text-white/70">
+            Lascia i tuoi dati, dicci se hai già fatto parte dello staff e
+            scegli il ruolo che preferisci.
+          </p>
+        </header>
 
-          <section className={stepClass(step, 0)}>
-            <StepHeading step={0} current={step} />
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className={stepsClass(step, [0, 1])}>
+          <StepHeading step={0} current={step} />
+          <StepHeading step={1} current={step} />
+          <SectionLabel title="Dati personali" />
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:mt-0 lg:gap-2.5">
+            <div className={step === 0 ? "contents" : "hidden lg:contents"}>
               <Field
                 id="firstName"
                 label="Nome"
@@ -231,11 +235,7 @@ export function StaffForm() {
                 onChange={(value) => update("lastName", value)}
               />
             </div>
-          </section>
-
-          <section className={`${stepClass(step, 1)} lg:mt-0`}>
-            <StepHeading step={1} current={step} />
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className={step === 1 ? "contents" : "hidden lg:contents"}>
               <Field
                 id="phone"
                 label="Telefono"
@@ -257,76 +257,79 @@ export function StaffForm() {
                 onChange={(value) => update("email", value)}
               />
             </div>
-          </section>
-
-          <section className={`${stepClass(step, 2)} lg:mt-0`}>
-            <StepHeading step={2} current={step} />
-            <fieldset className="mt-4">
-              <legend className="sr-only lg:not-sr-only lg:mb-3 lg:block lg:text-sm lg:font-medium lg:text-white">
-                Hai partecipato allo staff l&apos;anno scorso?
-              </legend>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { value: true, label: "Sì" },
-                  { value: false, label: "No" },
-                ].map((option) => {
-                  const selected = form.participatedLastYear === option.value;
-                  return (
-                    <button
-                      key={option.label}
-                      type="button"
-                      onClick={() => update("participatedLastYear", option.value)}
-                      className={`rounded-2xl border px-4 py-4 text-sm font-semibold tracking-wide transition lg:py-3 ${
-                        selected
-                          ? "border-mint bg-mint text-navy"
-                          : "border-white/20 bg-white/5 text-white hover:border-mint/60"
-                      }`}
-                      aria-pressed={selected}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-              {errors.participatedLastYear ? (
-                <p className="mt-2 text-sm text-mint">
-                  {errors.participatedLastYear}
-                </p>
-              ) : null}
-            </fieldset>
-          </section>
+          </div>
         </div>
 
-        <section className={`${stepClass(step, 3, false)}`}>
-          <StepHeading step={3} current={step} />
-          <fieldset className="mt-3 flex min-h-0 flex-1 flex-col lg:mt-3 lg:flex-none">
-            <legend className="sr-only lg:not-sr-only lg:mb-3 lg:block lg:text-sm lg:font-medium lg:text-white">
-              Ruolo che preferisci svolgere
+        <section className={`${stepClass(step, 2)} lg:border-t lg:border-white/10 lg:pt-3`}>
+          <StepHeading step={2} current={step} />
+          <fieldset className="mt-5 lg:mt-0">
+            <legend className="mb-4 block text-sm font-medium text-white lg:mb-0 lg:sr-only">
+              Hai partecipato allo staff l&apos;anno scorso?
             </legend>
-            <div className="grid min-h-0 flex-1 grid-cols-2 content-start gap-2 overflow-y-auto lg:grid-cols-4 lg:overflow-visible">
-              {STAFF_ROLES.map((role) => {
+            <div className="lg:flex lg:items-center lg:justify-between lg:gap-4">
+              <p className="mb-4 hidden text-sm font-medium text-white lg:mb-0 lg:block">
+                Hai partecipato allo staff l&apos;anno scorso?
+              </p>
+              <div className="grid grid-cols-2 gap-3 lg:w-[min(100%,280px)] lg:shrink-0 lg:gap-2">
+              {[
+                { value: true, label: "Sì" },
+                { value: false, label: "No" },
+              ].map((option) => (
+                <ChoiceButton
+                  key={option.label}
+                  selected={form.participatedLastYear === option.value}
+                  onClick={() => update("participatedLastYear", option.value)}
+                >
+                  {option.label}
+                </ChoiceButton>
+              ))}
+              </div>
+            </div>
+            {errors.participatedLastYear ? (
+              <p className="mt-2 text-sm text-mint">
+                {errors.participatedLastYear}
+              </p>
+            ) : null}
+          </fieldset>
+        </section>
+
+        <section className={`${stepClass(step, 3, true)} lg:border-t lg:border-white/10 lg:pt-3`}>
+          <StepHeading step={3} current={step} />
+          <SectionLabel title="Ruolo preferito" />
+          <fieldset className="mt-5 flex min-h-0 flex-1 flex-col lg:mt-0 lg:h-full">
+            <legend className="sr-only">Ruolo che preferisci svolgere</legend>
+            <div className="grid min-h-0 flex-1 grid-cols-2 content-start gap-2.5 overflow-y-auto sm:grid-cols-2 lg:grid-cols-12 lg:content-stretch lg:gap-2.5 lg:overflow-visible">
+              {STAFF_ROLES.map((role, index) => {
                 const selected = form.role === role.id;
+                const lastRow = index >= 4;
                 return (
                   <button
                     key={role.id}
                     type="button"
                     onClick={() => update("role", role.id)}
-                    className={`flex items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-left transition lg:flex-col lg:items-center lg:justify-center lg:gap-2 lg:px-2 lg:py-3 lg:text-center ${
+                    className={`relative flex min-h-[4.75rem] items-center gap-3 rounded-2xl border px-3 py-3 text-left transition lg:h-full lg:min-h-[3.5rem] lg:flex-col lg:items-center lg:justify-center lg:gap-1 lg:px-2 lg:py-2 lg:text-center ${
+                      lastRow ? "lg:col-span-4" : "lg:col-span-3"
+                    } ${
                       selected
-                        ? "border-mint bg-mint text-navy shadow-[0_0_24px_rgba(0,237,175,0.25)]"
-                        : "border-white/20 bg-white/5 text-white hover:border-mint/60"
+                        ? "border-mint bg-mint text-navy shadow-[0_8px_24px_rgba(0,237,175,0.22)]"
+                        : "border-white/15 bg-white/5 text-white hover:border-mint/55 hover:bg-white/[0.08]"
                     }`}
                     aria-pressed={selected}
                   >
+                    {selected ? (
+                      <span className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-navy text-mint">
+                        <CheckIcon />
+                      </span>
+                    ) : null}
                     <span
                       aria-hidden
-                      className={`flex h-9 w-9 items-center justify-center rounded-xl lg:h-11 lg:w-11 ${
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl lg:h-7 lg:w-7 ${
                         selected ? "bg-navy/10" : "bg-white/10"
                       }`}
                     >
                       <RoleIcon role={role.id} />
                     </span>
-                    <span className="text-sm font-semibold leading-tight lg:text-xs">
+                    <span className="text-sm font-semibold leading-tight lg:line-clamp-2 lg:text-[12px] lg:leading-snug">
                       {role.label}
                     </span>
                   </button>
@@ -339,13 +342,11 @@ export function StaffForm() {
           </fieldset>
         </section>
 
-        <section className={`${stepClass(step, 4, false)} lg:mt-1`}>
+        <section className={`${stepClass(step, 4)} lg:border-t lg:border-white/10 lg:pt-3`}>
           <StepHeading step={4} current={step} />
-          <div className="mt-4 space-y-3 lg:mt-0 lg:space-y-2">
-            <p className="hidden text-sm font-medium text-white lg:block">
-              Privacy e riprese
-            </p>
-            <p className="text-sm leading-6 text-white/75">
+          <SectionLabel title="Privacy e consensi" />
+          <div className="mt-5 flex flex-col gap-4 lg:mt-0 lg:gap-2">
+            <p className="text-sm leading-6 text-white/70 lg:text-[13px] lg:leading-5">
               Prima di inviare, leggi l&apos;{" "}
               <Link
                 href="/privacy"
@@ -355,79 +356,86 @@ export function StaffForm() {
               >
                 informativa privacy
               </Link>
-              . Il consenso alle riprese social è facoltativo e non
-              pregiudica la candidatura.
+              <span className="lg:hidden">
+                . Il consenso alle riprese social è facoltativo e non
+                pregiudica la candidatura.
+              </span>
+              <span className="hidden lg:inline">. Il consenso social è facoltativo.</span>
             </p>
 
-            <div className="grid gap-3 lg:grid-cols-2">
-              <div>
-                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/20 bg-white/5 px-4 py-3 lg:py-2.5">
+            <div className="grid gap-3 lg:grid-cols-2 lg:gap-2.5">
+              <div className="rounded-2xl border border-mint/35 bg-mint/[0.07] px-4 py-4 sm:px-5 lg:px-3.5 lg:py-2">
+                <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.18em] text-mint lg:mb-1.5">
+                  Obbligatorio
+                </p>
+                <label className="flex cursor-pointer items-start gap-3">
                   <input
                     type="checkbox"
-                    className="mt-1 h-4 w-4 shrink-0 accent-[#00edaf]"
+                    className="mt-0.5 h-5 w-5 shrink-0 accent-[#00edaf]"
                     checked={form.privacyConsent}
                     onChange={(event) =>
                       update("privacyConsent", event.target.checked)
                     }
                   />
-                  <span className="text-sm leading-6 text-white">
+                  <span className="text-sm leading-6 text-white lg:text-[13px] lg:leading-5">
                     Ho letto l&apos;informativa privacy e ne ho compreso i
-                    contenuti. *
+                    contenuti.
                   </span>
                 </label>
                 {errors.privacyConsent ? (
-                  <p className="mt-2 text-sm text-mint">
-                    {errors.privacyConsent}
-                  </p>
+                  <p className="mt-3 text-sm text-mint lg:mt-1.5">{errors.privacyConsent}</p>
                 ) : null}
               </div>
 
-              <fieldset>
-                <legend className="mb-2 text-sm font-medium text-white">
+              <div
+                role="group"
+                aria-labelledby="media-consent-label"
+                className="rounded-2xl border border-white/15 bg-white/[0.04] px-4 py-4 sm:px-5 lg:px-3.5 lg:py-2"
+              >
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2 lg:mb-1.5">
+                  <p id="media-consent-label" className="text-sm font-medium text-white lg:text-[13px]">
+                    Foto, video e canali social
+                  </p>
+                  <span className="rounded-full border border-white/15 px-2.5 py-0.5 text-[10px] uppercase tracking-[0.16em] text-white/55">
+                    Facoltativo
+                  </span>
+                </div>
+                <p className="mb-4 text-sm leading-6 text-white/65 lg:hidden">
                   Acconsenti a foto, video e pubblicazione sui canali social
                   dell&apos;evento?
-                </legend>
-                <div className="grid grid-cols-2 gap-3">
+                </p>
+                <div className="grid grid-cols-2 gap-3 lg:gap-2">
                   {[
                     { value: true, label: "Sì, acconsento" },
                     { value: false, label: "No" },
-                  ].map((option) => {
-                    const selected = form.mediaConsent === option.value;
-                    return (
-                      <button
-                        key={option.label}
-                        type="button"
-                        onClick={() => update("mediaConsent", option.value)}
-                        className={`rounded-2xl border px-4 py-3 text-sm font-semibold tracking-wide transition lg:py-2.5 ${
-                          selected
-                            ? "border-mint bg-mint text-navy"
-                            : "border-white/20 bg-white/5 text-white hover:border-mint/60"
-                        }`}
-                        aria-pressed={selected}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
+                  ].map((option) => (
+                    <ChoiceButton
+                      key={option.label}
+                      selected={form.mediaConsent === option.value}
+                      onClick={() => update("mediaConsent", option.value)}
+                    >
+                      {option.label}
+                    </ChoiceButton>
+                  ))}
                 </div>
                 {errors.mediaConsent ? (
-                  <p className="mt-2 text-sm text-mint">{errors.mediaConsent}</p>
+                  <p className="mt-3 text-sm text-mint lg:mt-2">{errors.mediaConsent}</p>
                 ) : null}
-              </fieldset>
+              </div>
             </div>
           </div>
         </section>
-
-        <button
-          type="submit"
-          disabled={pending}
-          className="mt-4 hidden w-full rounded-2xl bg-mint px-5 py-3.5 font-display text-lg tracking-[0.18em] text-navy uppercase transition enabled:hover:brightness-110 disabled:cursor-wait disabled:opacity-70 lg:flex lg:items-center lg:justify-center"
-        >
-          {pending ? "Invio in corso..." : filled ? "Invia candidatura" : "Completa e invia"}
-        </button>
       </div>
 
-      <div className="mt-4 flex shrink-0 gap-3 lg:hidden">
+      <button
+        type="submit"
+        disabled={pending}
+        className="mt-4 hidden min-h-11 w-full shrink-0 rounded-2xl bg-mint px-5 py-2.5 font-display text-lg tracking-[0.2em] text-navy uppercase shadow-[0_12px_36px_rgba(0,237,175,0.28)] transition enabled:hover:brightness-110 disabled:cursor-wait disabled:opacity-70 lg:flex lg:items-center lg:justify-center xl:mt-5"
+      >
+        {pending ? "Invio in corso..." : filled ? "Invia candidatura" : "Completa e invia"}
+      </button>
+
+      <div className="mt-5 flex shrink-0 gap-3 lg:hidden">
         {step > 0 ? (
           <button
             type="button"
@@ -435,7 +443,7 @@ export function StaffForm() {
               setErrors({});
               setStep((current) => Math.max(current - 1, 0) as FormStepIndex);
             }}
-            className="rounded-2xl border border-white/20 px-4 py-3.5 text-sm font-semibold text-white"
+            className="min-h-12 rounded-2xl border border-white/20 px-4 py-3.5 text-sm font-semibold text-white"
           >
             Indietro
           </button>
@@ -443,7 +451,7 @@ export function StaffForm() {
         <button
           type="submit"
           disabled={pending}
-          className="flex-1 rounded-2xl bg-mint px-5 py-3.5 font-display tracking-[0.16em] text-navy uppercase disabled:opacity-70"
+          className="min-h-12 flex-1 rounded-2xl bg-mint px-5 py-3.5 font-display tracking-[0.16em] text-navy uppercase shadow-[0_8px_24px_rgba(0,237,175,0.22)] disabled:opacity-70"
         >
           {step < LAST_STEP
             ? "Avanti"
@@ -453,6 +461,25 @@ export function StaffForm() {
         </button>
       </div>
     </form>
+  );
+}
+
+function SectionLabel({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="mb-4 hidden lg:mb-1 lg:block">
+      <h2 className="text-[13px] font-semibold uppercase tracking-[0.18em] text-mint">
+        {title}
+      </h2>
+      {description ? (
+        <p className="mt-1.5 text-sm leading-6 text-white/60">{description}</p>
+      ) : null}
+    </div>
   );
 }
 
@@ -466,11 +493,50 @@ function StepHeading({
   const item = FORM_STEPS[step];
   return (
     <div className={current === step ? "lg:hidden" : "hidden"}>
-      <h1 className="font-display text-3xl tracking-widest text-white uppercase">
+      <h1 className="font-display text-3xl tracking-[0.14em] text-white uppercase">
         {item.title}
       </h1>
-      <p className="mt-1 text-sm text-white/75">{item.description}</p>
+      <p className="mt-2 text-sm leading-6 text-white/75">{item.description}</p>
     </div>
+  );
+}
+
+function ChoiceButton({
+  selected,
+  onClick,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`min-h-12 rounded-2xl border px-4 py-3 text-sm font-semibold tracking-wide transition lg:min-h-10 lg:py-2 ${
+        selected
+          ? "border-mint bg-mint text-navy"
+          : "border-white/20 bg-white/5 text-white hover:border-mint/60"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-2.5 w-2.5" fill="none" aria-hidden>
+      <path
+        d="M3.5 8.2 6.4 11l6.1-6.4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -495,7 +561,9 @@ function Field({
 }) {
   return (
     <label className="block" htmlFor={id}>
-      <span className="mb-1.5 block text-sm font-medium text-white">{label}</span>
+      <span className="mb-2 block text-[13px] font-medium text-white/90 lg:mb-1.5">
+        {label}
+      </span>
       <input
         id={id}
         name={id}
@@ -505,7 +573,7 @@ function Field({
         placeholder={placeholder}
         aria-invalid={Boolean(error)}
         onChange={(event) => onChange(event.target.value)}
-        className={`w-full rounded-2xl border bg-white/95 px-4 py-3 text-navy outline-none placeholder:text-navy/40 ${
+        className={`w-full rounded-2xl border bg-white/95 px-4 py-3.5 text-[15px] text-navy outline-none placeholder:text-navy/40 lg:py-2 ${
           error ? "border-mint ring-2 ring-mint/40" : "border-transparent focus:ring-2 focus:ring-mint"
         }`}
       />

@@ -16,7 +16,7 @@ export function BrandMark({
     return (
       <Link href={href} className="group flex items-center gap-3">
         <Image
-          src="/logo.png"
+          src="/logo-source.webp"
           alt="Logo Leonessa Cup"
           width={48}
           height={56}
@@ -38,7 +38,7 @@ export function BrandMark({
   return (
     <Link href={href} className="group flex flex-col items-center text-center">
       <Image
-        src="/logo.png"
+        src="/logo-source.webp"
         alt="Logo Leonessa Cup"
         width={compact ? 88 : 132}
         height={compact ? 102 : 152}

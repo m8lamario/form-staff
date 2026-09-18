@@ -4,6 +4,8 @@ Form di candidatura per lo staff della Leonessa Cup, con pannello admin per legg
 
 ## Avvio locale
 
+Richiede PostgreSQL in ascolto su `localhost:5432` e il database `form-staff`.
+
 ```bash
 cp .env.example .env
 npm install
@@ -28,5 +30,5 @@ Su desktop il form usa l'immagine verticale `public/hero.png`: sostituiscila con
 ## Stack
 
 - Next.js 15 e Tailwind
-- Prisma + SQLite
+- Prisma + PostgreSQL
 - Recharts per i grafici admin
