@@ -47,7 +47,7 @@ function stepClass(
     current === step ? "flex min-h-0 flex-1 flex-col" : "hidden";
   const desktop = growOnDesktop
     ? "lg:flex lg:min-h-0 lg:flex-1 lg:flex-col"
-    : "lg:flex lg:flex-col";
+    : "lg:flex lg:flex-none lg:flex-col";
   return `${mobile} ${desktop}`;
 }
 
@@ -188,8 +188,12 @@ export function StaffForm() {
         </p>
       ) : null}
 
-      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-10">
-          <div className="flex min-h-0 flex-1 flex-col lg:justify-center lg:gap-5">
+      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-center lg:gap-10">
+        <div
+          className={`${
+            step < 3 ? "flex min-h-0 flex-1 flex-col" : "hidden"
+          } lg:flex lg:flex-none lg:flex-col lg:gap-4`}
+        >
           <div className="hidden lg:block">
             <h1 className="font-display text-4xl tracking-widest text-white uppercase xl:text-5xl">
               Unisciti allo staff
@@ -286,13 +290,13 @@ export function StaffForm() {
           </section>
         </div>
 
-        <section className={`${stepClass(step, 3, true)} lg:border-l lg:border-white/10 lg:pl-10`}>
+        <section className={`${stepClass(step, 3, false)} lg:border-l lg:border-white/10 lg:pl-10`}>
           <StepHeading step={3} current={step} />
-          <fieldset className="mt-3 flex min-h-0 flex-1 flex-col lg:mt-4">
+          <fieldset className="mt-3 flex min-h-0 flex-1 flex-col lg:mt-3 lg:flex-none">
             <legend className="sr-only lg:not-sr-only lg:mb-3 lg:block lg:text-sm lg:font-medium lg:text-white">
               Ruolo che preferisci svolgere
             </legend>
-            <div className="grid min-h-0 flex-1 grid-cols-2 content-start gap-2 overflow-y-auto lg:overflow-visible xl:grid-cols-3">
+            <div className="grid min-h-0 flex-1 grid-cols-2 content-start gap-2 overflow-y-auto lg:grid-cols-4 lg:overflow-visible">
               {STAFF_ROLES.map((role) => {
                 const selected = form.role === role.id;
                 return (
@@ -300,7 +304,7 @@ export function StaffForm() {
                     key={role.id}
                     type="button"
                     onClick={() => update("role", role.id)}
-                    className={`flex items-center gap-2.5 rounded-2xl border px-3 py-3 text-left transition lg:flex-col lg:items-center lg:justify-center lg:gap-2 lg:px-2 lg:py-4 lg:text-center ${
+                    className={`flex items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-left transition lg:flex-col lg:items-center lg:justify-center lg:gap-2 lg:px-2 lg:py-3 lg:text-center ${
                       selected
                         ? "border-mint bg-mint text-navy shadow-[0_0_24px_rgba(0,237,175,0.25)]"
                         : "border-white/20 bg-white/5 text-white hover:border-mint/60"
