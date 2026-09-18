@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateStaffPayload } from "./staff";
+import { getStepErrors, validateStaffPayload } from "./staff";
 
 const validPayload = {
   firstName: "Giulia",
@@ -55,5 +55,19 @@ describe("validateStaffPayload", () => {
     if (!result.ok) {
       expect(result.errors.role).toBe("Seleziona un ruolo");
     }
+  });
+});
+
+describe("getStepErrors", () => {
+  it("isola gli errori dello step corrente", () => {
+    const identity = getStepErrors({}, 0);
+    expect(identity.firstName).toBeTruthy();
+    expect(identity.lastName).toBeTruthy();
+    expect(identity.email).toBeUndefined();
+
+    const contacts = getStepErrors({ firstName: "Giulia", lastName: "Rossi" }, 1);
+    expect(contacts.phone).toBeTruthy();
+    expect(contacts.email).toBeTruthy();
+    expect(contacts.firstName).toBeUndefined();
   });
 });

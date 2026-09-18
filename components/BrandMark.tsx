@@ -4,9 +4,37 @@ import Link from "next/link";
 type BrandMarkProps = {
   compact?: boolean;
   href?: string;
+  layout?: "stack" | "row";
 };
 
-export function BrandMark({ compact = false, href = "/" }: BrandMarkProps) {
+export function BrandMark({
+  compact = false,
+  href = "/",
+  layout = "stack",
+}: BrandMarkProps) {
+  if (layout === "row") {
+    return (
+      <Link href={href} className="group flex items-center gap-3">
+        <Image
+          src="/logo.png"
+          alt="Logo Leonessa Cup"
+          width={48}
+          height={56}
+          priority
+          className="h-10 w-auto drop-shadow-[0_0_18px_rgba(0,237,175,0.35)] md:h-12"
+        />
+        <span>
+          <span className="block font-display text-xl tracking-[0.18em] text-white md:text-3xl">
+            LEONESSA CUP
+          </span>
+          <span className="block text-[10px] uppercase tracking-[0.28em] text-mint md:text-xs">
+            Candidatura staff
+          </span>
+        </span>
+      </Link>
+    );
+  }
+
   return (
     <Link href={href} className="group flex flex-col items-center text-center">
       <Image

@@ -21,6 +21,31 @@ export type StaffPayload = {
 
 export type FieldErrors = Partial<Record<keyof StaffPayload, string>>;
 
+export const FORM_STEPS = [
+  {
+    title: "Chi sei",
+    description: "Nome e cognome",
+    fields: ["firstName", "lastName"],
+  },
+  {
+    title: "Recapiti",
+    description: "Telefono e email",
+    fields: ["phone", "email"],
+  },
+  {
+    title: "Esperienza",
+    description: "Hai già fatto parte dello staff?",
+    fields: ["participatedLastYear"],
+  },
+  {
+    title: "Ruolo",
+    description: "Cosa preferisci fare",
+    fields: ["role"],
+  },
+] as const;
+
+export type FormStepIndex = 0 | 1 | 2 | 3;
+
 export type ValidationResult =
   | { ok: true; data: StaffPayload }
   | { ok: false; errors: FieldErrors };
@@ -110,4 +135,23 @@ export function validateStaffPayload(input: unknown): ValidationResult {
       role: role as StaffRoleId,
     },
   };
+}
+
+export function getStepErrors(input: unknown, step: FormStepIndex): FieldErrors {
+  const result = validateStaffPayload(input);
+  if (result.ok) return {};
+
+  const picked: FieldErrors = {};
+  for (const field of FORM_STEPS[step].fields) {
+    const message = result.errors[field];
+    if (message) picked[field] = message;
+  }
+  return picked;
+}
+
+export function stepForField(field: keyof StaffPayload): FormStepIndex {
+  const index = FORM_STEPS.findIndex((step) =>
+    (step.fields as readonly string[]).includes(field),
+  );
+  return (index >= 0 ? index : 0) as FormStepIndex;
 }
