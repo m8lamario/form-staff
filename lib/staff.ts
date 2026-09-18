@@ -17,6 +17,8 @@ export type StaffPayload = {
   email: string;
   participatedLastYear: boolean;
   role: StaffRoleId;
+  privacyConsent: true;
+  mediaConsent: boolean;
 };
 
 export type FieldErrors = Partial<Record<keyof StaffPayload, string>>;
@@ -42,9 +44,14 @@ export const FORM_STEPS = [
     description: "Cosa preferisci fare",
     fields: ["role"],
   },
+  {
+    title: "Privacy",
+    description: "Trattamento dati e riprese",
+    fields: ["privacyConsent", "mediaConsent"],
+  },
 ] as const;
 
-export type FormStepIndex = 0 | 1 | 2 | 3;
+export type FormStepIndex = 0 | 1 | 2 | 3 | 4;
 
 export type ValidationResult =
   | { ok: true; data: StaffPayload }
@@ -91,6 +98,9 @@ export function validateStaffPayload(input: unknown): ValidationResult {
   const role = readString(raw.role);
   const participatedRaw = raw.participatedLastYear;
 
+  const privacyConsent = raw.privacyConsent;
+  const mediaConsent = raw.mediaConsent;
+
   const errors: FieldErrors = {};
 
   const firstNameError = validateName(firstName, "nome");
@@ -120,6 +130,14 @@ export function validateStaffPayload(input: unknown): ValidationResult {
     errors.role = "Seleziona un ruolo";
   }
 
+  if (privacyConsent !== true) {
+    errors.privacyConsent = "Per inviare la candidatura devi accettare l'informativa privacy";
+  }
+
+  if (typeof mediaConsent !== "boolean") {
+    errors.mediaConsent = "Indica se acconsenti alle riprese social";
+  }
+
   if (Object.keys(errors).length > 0) {
     return { ok: false, errors };
   }
@@ -133,6 +151,8 @@ export function validateStaffPayload(input: unknown): ValidationResult {
       email,
       participatedLastYear: participatedRaw === true,
       role: role as StaffRoleId,
+      privacyConsent: true,
+      mediaConsent: mediaConsent === true,
     },
   };
 }

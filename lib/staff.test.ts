@@ -8,6 +8,8 @@ const validPayload = {
   email: "giulia.rossi@example.com",
   participatedLastYear: true,
   role: "FOTOGRAFIA",
+  privacyConsent: true,
+  mediaConsent: false,
 };
 
 describe("validateStaffPayload", () => {
@@ -30,6 +32,8 @@ describe("validateStaffPayload", () => {
       expect(result.errors.email).toBeTruthy();
       expect(result.errors.participatedLastYear).toBeTruthy();
       expect(result.errors.role).toBeTruthy();
+      expect(result.errors.privacyConsent).toBeTruthy();
+      expect(result.errors.mediaConsent).toBeTruthy();
     }
   });
 
@@ -46,7 +50,32 @@ describe("validateStaffPayload", () => {
     }
   });
 
-  it("accetta solo i ruoli dello staff", () => {
+  it("richiede i consensi privacy e riprese", () => {
+    const result = validateStaffPayload({
+      ...validPayload,
+      privacyConsent: false,
+      mediaConsent: null,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors.privacyConsent).toBeTruthy();
+      expect(result.errors.mediaConsent).toBeTruthy();
+    }
+  });
+
+  it("accetta il diniego alle riprese social", () => {
+    const result = validateStaffPayload({
+      ...validPayload,
+      mediaConsent: false,
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.privacyConsent).toBe(true);
+      expect(result.data.mediaConsent).toBe(false);
+    }
+  });
+
+  it("rifiuta un ruolo non previsto", () => {
     const result = validateStaffPayload({
       ...validPayload,
       role: "ALLENATORE",
@@ -69,5 +98,9 @@ describe("getStepErrors", () => {
     expect(contacts.phone).toBeTruthy();
     expect(contacts.email).toBeTruthy();
     expect(contacts.firstName).toBeUndefined();
+
+    const privacy = getStepErrors({ ...validPayload, privacyConsent: false }, 4);
+    expect(privacy.privacyConsent).toBeTruthy();
+    expect(privacy.firstName).toBeUndefined();
   });
 });

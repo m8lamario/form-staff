@@ -40,6 +40,7 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
     [applications],
   );
   const returningCount = applications.filter((item) => item.participatedLastYear).length;
+  const mediaCount = applications.filter((item) => item.mediaConsent).length;
   const topRole = [...distribution].sort((a, b) => b.count - a.count)[0];
 
   const filtered = useMemo(() => {
@@ -53,7 +54,7 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
 
   return (
     <div className="space-y-8">
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard label="Totale risposte" value={applications.length} />
         <StatCard label="Già staff l'anno scorso" value={returningCount} />
         <StatCard
@@ -64,6 +65,7 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
           label="Ruolo più richiesto"
           value={topRole?.count ? topRole.label : "—"}
         />
+        <StatCard label="Consensi riprese" value={mediaCount} />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
@@ -200,13 +202,15 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
                 <th className="px-3 py-3 font-medium">Email</th>
                 <th className="px-3 py-3 font-medium">Anno scorso</th>
                 <th className="px-3 py-3 font-medium">Ruolo</th>
+                <th className="px-3 py-3 font-medium">Privacy</th>
+                <th className="px-3 py-3 font-medium">Riprese</th>
                 <th className="px-3 py-3 font-medium">Data</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-3 py-10 text-center text-white/70">
+                  <td colSpan={9} className="px-3 py-10 text-center text-white/70">
                     Nessuna candidatura da mostrare.
                   </td>
                 </tr>
@@ -221,6 +225,12 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
                       {item.participatedLastYear ? "Sì" : "No"}
                     </td>
                     <td className="px-3 py-3">{roleLabel(item.role)}</td>
+                    <td className="px-3 py-3">
+                      {item.privacyConsent ? "Sì" : "No"}
+                    </td>
+                    <td className="px-3 py-3">
+                      {item.mediaConsent ? "Sì" : "No"}
+                    </td>
                     <td className="px-3 py-3">
                       {new Date(item.createdAt).toLocaleString("it-IT")}
                     </td>

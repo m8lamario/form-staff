@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { PRIVACY_POLICY_VERSION } from "@/lib/privacy";
 import { validateStaffPayload } from "@/lib/staff";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
@@ -21,7 +22,11 @@ export async function POST(request: Request) {
 
   try {
     const created = await prisma.staffApplication.create({
-      data: result.data,
+      data: {
+        ...result.data,
+        privacyConsentAt: new Date(),
+        privacyPolicyVersion: PRIVACY_POLICY_VERSION,
+      },
     });
     return NextResponse.json({ id: created.id }, { status: 201 });
   } catch (error) {

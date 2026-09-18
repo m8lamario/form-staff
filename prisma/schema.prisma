@@ -25,6 +25,10 @@ model StaffApplication {
   email                String    @unique
   participatedLastYear Boolean
   role                 StaffRole
+  privacyConsent       Boolean   @default(false)
+  privacyConsentAt     DateTime  @default(now())
+  privacyPolicyVersion String    @default("1.0")
+  mediaConsent         Boolean   @default(false)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 

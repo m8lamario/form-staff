@@ -10,6 +10,8 @@ const sample = [
     email: "giulia.ferrari@example.com",
     participatedLastYear: true,
     role: StaffRole.FOTOGRAFIA,
+    privacyConsent: true,
+    mediaConsent: true,
   },
   {
     firstName: "Luca",
@@ -18,6 +20,8 @@ const sample = [
     email: "luca.bianchi@example.com",
     participatedLastYear: false,
     role: StaffRole.RACCHETTA_PALLE,
+    privacyConsent: true,
+    mediaConsent: false,
   },
   {
     firstName: "Sara",
@@ -26,6 +30,8 @@ const sample = [
     email: "sara.conti@example.com",
     participatedLastYear: true,
     role: StaffRole.SOCIAL,
+    privacyConsent: true,
+    mediaConsent: true,
   },
   {
     firstName: "Marco",
@@ -34,6 +40,8 @@ const sample = [
     email: "marco.esposito@example.com",
     participatedLastYear: false,
     role: StaffRole.CASSA,
+    privacyConsent: true,
+    mediaConsent: false,
   },
   {
     firstName: "Elena",
@@ -42,6 +50,8 @@ const sample = [
     email: "elena.ricci@example.com",
     participatedLastYear: false,
     role: StaffRole.INTERVISTE,
+    privacyConsent: true,
+    mediaConsent: true,
   },
   {
     firstName: "Davide",
@@ -50,6 +60,8 @@ const sample = [
     email: "davide.galli@example.com",
     participatedLastYear: true,
     role: StaffRole.BUTTA_FUORI,
+    privacyConsent: true,
+    mediaConsent: false,
   },
   {
     firstName: "Chiara",
@@ -58,6 +70,8 @@ const sample = [
     email: "chiara.moretti@example.com",
     participatedLastYear: false,
     role: StaffRole.GIORNALE,
+    privacyConsent: true,
+    mediaConsent: true,
   },
   {
     firstName: "Andrea",
@@ -66,6 +80,8 @@ const sample = [
     email: "andrea.romano@example.com",
     participatedLastYear: true,
     role: StaffRole.RACCHETTA_PALLE,
+    privacyConsent: true,
+    mediaConsent: false,
   },
 ];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RoleIcon } from "@/components/RoleIcons";
 import {
@@ -21,6 +22,8 @@ type FormState = {
   email: string;
   participatedLastYear: boolean | null;
   role: StaffRoleId | "";
+  privacyConsent: boolean;
+  mediaConsent: boolean | null;
 };
 
 const INITIAL_STATE: FormState = {
@@ -30,6 +33,8 @@ const INITIAL_STATE: FormState = {
   email: "",
   participatedLastYear: null,
   role: "",
+  privacyConsent: false,
+  mediaConsent: null,
 };
 
 const LAST_STEP = (FORM_STEPS.length - 1) as FormStepIndex;
@@ -67,7 +72,9 @@ export function StaffForm() {
           form.phone &&
           form.email &&
           form.participatedLastYear !== null &&
-          form.role,
+          form.role &&
+          form.privacyConsent &&
+          form.mediaConsent !== null,
       ),
     [form],
   );
@@ -188,11 +195,11 @@ export function StaffForm() {
         </p>
       ) : null}
 
-      <div className="flex min-h-0 flex-1 flex-col lg:justify-center lg:gap-4">
+      <div className="flex min-h-0 flex-1 flex-col lg:justify-center lg:gap-3">
         <div
           className={`${
             step < 3 ? "flex min-h-0 flex-1 flex-col" : "hidden"
-          } lg:flex lg:flex-none lg:flex-col lg:gap-4`}
+          } lg:flex lg:flex-none lg:flex-col lg:gap-3`}
         >
           <div className="hidden lg:block">
             <h1 className="font-display text-4xl tracking-widest text-white uppercase xl:text-5xl">
@@ -330,15 +337,94 @@ export function StaffForm() {
               <p className="mt-2 text-sm text-mint">{errors.role}</p>
             ) : null}
           </fieldset>
-
-          <button
-            type="submit"
-            disabled={pending}
-            className="mt-4 hidden w-full rounded-2xl bg-mint px-5 py-3.5 font-display text-lg tracking-[0.18em] text-navy uppercase transition enabled:hover:brightness-110 disabled:cursor-wait disabled:opacity-70 lg:flex lg:items-center lg:justify-center"
-          >
-            {pending ? "Invio in corso..." : filled ? "Invia candidatura" : "Completa e invia"}
-          </button>
         </section>
+
+        <section className={`${stepClass(step, 4, false)} lg:mt-1`}>
+          <StepHeading step={4} current={step} />
+          <div className="mt-4 space-y-3 lg:mt-0 lg:space-y-2">
+            <p className="hidden text-sm font-medium text-white lg:block">
+              Privacy e riprese
+            </p>
+            <p className="text-sm leading-6 text-white/75">
+              Prima di inviare, leggi l&apos;{" "}
+              <Link
+                href="/privacy"
+                target="_blank"
+                rel="noreferrer"
+                className="text-mint underline underline-offset-2"
+              >
+                informativa privacy
+              </Link>
+              . Il consenso alle riprese social è facoltativo e non
+              pregiudica la candidatura.
+            </p>
+
+            <div className="grid gap-3 lg:grid-cols-2">
+              <div>
+                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/20 bg-white/5 px-4 py-3 lg:py-2.5">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 shrink-0 accent-[#00edaf]"
+                    checked={form.privacyConsent}
+                    onChange={(event) =>
+                      update("privacyConsent", event.target.checked)
+                    }
+                  />
+                  <span className="text-sm leading-6 text-white">
+                    Ho letto l&apos;informativa privacy e ne ho compreso i
+                    contenuti. *
+                  </span>
+                </label>
+                {errors.privacyConsent ? (
+                  <p className="mt-2 text-sm text-mint">
+                    {errors.privacyConsent}
+                  </p>
+                ) : null}
+              </div>
+
+              <fieldset>
+                <legend className="mb-2 text-sm font-medium text-white">
+                  Acconsenti a foto, video e pubblicazione sui canali social
+                  dell&apos;evento?
+                </legend>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: true, label: "Sì, acconsento" },
+                    { value: false, label: "No" },
+                  ].map((option) => {
+                    const selected = form.mediaConsent === option.value;
+                    return (
+                      <button
+                        key={option.label}
+                        type="button"
+                        onClick={() => update("mediaConsent", option.value)}
+                        className={`rounded-2xl border px-4 py-3 text-sm font-semibold tracking-wide transition lg:py-2.5 ${
+                          selected
+                            ? "border-mint bg-mint text-navy"
+                            : "border-white/20 bg-white/5 text-white hover:border-mint/60"
+                        }`}
+                        aria-pressed={selected}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {errors.mediaConsent ? (
+                  <p className="mt-2 text-sm text-mint">{errors.mediaConsent}</p>
+                ) : null}
+              </fieldset>
+            </div>
+          </div>
+        </section>
+
+        <button
+          type="submit"
+          disabled={pending}
+          className="mt-4 hidden w-full rounded-2xl bg-mint px-5 py-3.5 font-display text-lg tracking-[0.18em] text-navy uppercase transition enabled:hover:brightness-110 disabled:cursor-wait disabled:opacity-70 lg:flex lg:items-center lg:justify-center"
+        >
+          {pending ? "Invio in corso..." : filled ? "Invia candidatura" : "Completa e invia"}
+        </button>
       </div>
 
       <div className="mt-4 flex shrink-0 gap-3 lg:hidden">

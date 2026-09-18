@@ -9,6 +9,8 @@ export type ApplicationDTO = {
   email: string;
   participatedLastYear: boolean;
   role: StaffRoleId;
+  privacyConsent: boolean;
+  mediaConsent: boolean;
   createdAt: string;
 };
 
@@ -21,6 +23,8 @@ export function toApplicationDTO(row: StaffApplication): ApplicationDTO {
     email: row.email,
     participatedLastYear: row.participatedLastYear,
     role: row.role,
+    privacyConsent: row.privacyConsent,
+    mediaConsent: row.mediaConsent,
     createdAt: row.createdAt.toISOString(),
   };
 }
