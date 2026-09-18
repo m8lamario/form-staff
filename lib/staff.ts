@@ -46,7 +46,7 @@ export const FORM_STEPS = [
   },
   {
     title: "Privacy",
-    description: "Trattamento dati e riprese",
+    description: "Leggi le informative e scegli sui consensi",
     fields: ["privacyConsent", "mediaConsent"],
   },
 ] as const;
@@ -131,11 +131,13 @@ export function validateStaffPayload(input: unknown): ValidationResult {
   }
 
   if (privacyConsent !== true) {
-    errors.privacyConsent = "Per inviare la candidatura devi accettare l'informativa privacy";
+    errors.privacyConsent =
+      "Per inviare la candidatura conferma di avere letto l'informativa privacy";
   }
 
   if (typeof mediaConsent !== "boolean") {
-    errors.mediaConsent = "Indica se acconsenti alle riprese social";
+    errors.mediaConsent =
+      "Dopo aver letto la liberatoria, indica se acconsenti alle riprese social";
   }
 
   if (Object.keys(errors).length > 0) {

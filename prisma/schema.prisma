@@ -29,6 +29,8 @@ model StaffApplication {
   privacyConsentAt     DateTime  @default(now())
   privacyPolicyVersion String    @default("1.0")
   mediaConsent         Boolean   @default(false)
+  mediaConsentAt       DateTime?
+  mediaPolicyVersion   String    @default("1.0")
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 

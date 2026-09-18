@@ -19,19 +19,25 @@ export default function HomePage() {
         <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-r from-transparent to-[#011674]" />
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col px-4 py-4 sm:px-5 lg:px-8 lg:pb-5 lg:pt-6 xl:px-10 xl:pb-6 xl:pt-8">
-        <header className="flex shrink-0 items-center justify-between gap-3">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col px-5 py-5 sm:px-6 sm:py-5 lg:px-6 lg:pb-3 lg:pt-4 xl:px-10 xl:pb-6 xl:pt-8">
+        <header className="flex shrink-0 items-center justify-between gap-2 sm:gap-3">
           <BrandMark layout="row" />
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
             <Link
               href="/privacy"
-              className="rounded-full border border-white/20 px-3 py-1.5 text-[11px] uppercase tracking-[0.16em] text-white/70 hover:border-mint hover:text-mint"
+              className="rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-white/70 hover:border-mint hover:text-mint sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em]"
             >
               Privacy
             </Link>
             <Link
+              href="/social"
+              className="rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-white/70 hover:border-mint hover:text-mint sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em]"
+            >
+              Riprese
+            </Link>
+            <Link
               href="/admin/login"
-              className="rounded-full border border-white/20 px-3 py-1.5 text-[11px] uppercase tracking-[0.16em] text-white/70 hover:border-mint hover:text-mint"
+              className="hidden rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-white/70 hover:border-mint hover:text-mint sm:inline-flex sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em]"
             >
               Admin
             </Link>
@@ -49,7 +55,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#011674] via-[#011674]/30 to-transparent" />
         </div>
 
-        <section className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden lg:mt-4">
+        <section className="mt-6 flex min-h-0 flex-1 flex-col justify-center overflow-hidden sm:mt-5 lg:mt-3 lg:justify-start xl:mt-4">
           <StaffForm />
         </section>
       </div>

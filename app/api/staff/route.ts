@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { PRIVACY_POLICY_VERSION } from "@/lib/privacy";
+import { MEDIA_POLICY_VERSION, PRIVACY_POLICY_VERSION } from "@/lib/privacy";
 import { validateStaffPayload } from "@/lib/staff";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
@@ -26,6 +26,8 @@ export async function POST(request: Request) {
         ...result.data,
         privacyConsentAt: new Date(),
         privacyPolicyVersion: PRIVACY_POLICY_VERSION,
+        mediaConsentAt: new Date(),
+        mediaPolicyVersion: MEDIA_POLICY_VERSION,
       },
     });
     return NextResponse.json({ id: created.id }, { status: 201 });

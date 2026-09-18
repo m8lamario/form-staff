@@ -1,4 +1,12 @@
-export const PRIVACY_POLICY_VERSION = "1.0";
+export const PRIVACY_POLICY_VERSION = "1.1";
+export const MEDIA_POLICY_VERSION = "1.0";
+
+export const STAFF_MIN_AGE = 18;
+
+export const POLICY_PATHS = {
+  privacy: "/privacy",
+  social: "/social",
+} as const;
 
 /** Replace every DA-COMPILARE value before going live. */
 export const PRIVACY_ORG = {
@@ -20,7 +28,7 @@ export const PRIVACY_ORG = {
   website: "[DA COMPILARE: URL del sito ufficiale]",
   formUrl: "[DA COMPILARE: URL di questo form]",
   socialChannels:
-    "[DA COMPILARE: elenco canali, es. Instagram @..., Facebook, TikTok, YouTube, sito]",
+    "[DA COMPILARE: elenco canali ufficiali, es. Instagram @..., Facebook, TikTok, YouTube, sito]",
   hostingProvider:
     "[DA COMPILARE: fornitore di hosting e sede, es. Vercel Inc. / altro, con Paese]",
   otherProcessors:
@@ -29,7 +37,7 @@ export const PRIVACY_ORG = {
     "[DA COMPILARE: es. 24 mesi dalla conclusione dell'edizione]",
   retentionMedia:
     "[DA COMPILARE: es. 36 mesi dalla pubblicazione o fino a revoca del consenso]",
-  lastUpdated: "[DA COMPILARE: data di ultimo aggiornamento, es. 18 settembre 2026]",
+  lastUpdated: "18 settembre 2026",
   transferCountries:
     "[DA COMPILARE: Paesi extra-SEE, se presenti, e garanzie, es. USA / Data Privacy Framework o SCC]",
   supervisoryAuthority: "Garante per la protezione dei dati personali",

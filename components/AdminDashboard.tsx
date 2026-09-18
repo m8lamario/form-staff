@@ -34,6 +34,7 @@ type AdminDashboardProps = {
 export function AdminDashboard({ applications }: AdminDashboardProps) {
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"ALL" | StaffRoleId>("ALL");
+  const [mediaFilter, setMediaFilter] = useState<"ALL" | "YES" | "NO">("ALL");
 
   const distribution = useMemo(
     () => roleDistribution(applications),
@@ -47,10 +48,14 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
     const needle = query.trim().toLowerCase();
     return applications.filter((item) => {
       const matchesRole = roleFilter === "ALL" || item.role === roleFilter;
+      const matchesMedia =
+        mediaFilter === "ALL" ||
+        (mediaFilter === "YES" && item.mediaConsent) ||
+        (mediaFilter === "NO" && !item.mediaConsent);
       const haystack = `${item.firstName} ${item.lastName} ${item.email} ${item.phone}`.toLowerCase();
-      return matchesRole && (!needle || haystack.includes(needle));
+      return matchesRole && matchesMedia && (!needle || haystack.includes(needle));
     });
-  }, [applications, query, roleFilter]);
+  }, [applications, query, roleFilter, mediaFilter]);
 
   return (
     <div className="space-y-8">
@@ -188,6 +193,17 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
                   {role.label}
                 </option>
               ))}
+            </select>
+            <select
+              value={mediaFilter}
+              onChange={(event) =>
+                setMediaFilter(event.target.value as "ALL" | "YES" | "NO")
+              }
+              className="rounded-2xl border border-transparent bg-white px-4 py-3 text-navy outline-none focus:ring-2 focus:ring-mint"
+            >
+              <option value="ALL">Tutte le riprese</option>
+              <option value="YES">Consenso riprese: sì</option>
+              <option value="NO">Niente riprese</option>
             </select>
           </div>
         </div>

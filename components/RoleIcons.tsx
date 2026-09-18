@@ -3,7 +3,7 @@ import type { ReactNode, SVGProps } from "react";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
-function Icon({ children, ...props }: IconProps & { children: ReactNode }) {
+function Icon({ children, className, ...props }: IconProps & { children: ReactNode }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -13,7 +13,7 @@ function Icon({ children, ...props }: IconProps & { children: ReactNode }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
-      className="h-6 w-6 shrink-0"
+      className={`h-5 w-5 shrink-0 lg:h-[1.15rem] lg:w-[1.15rem] ${className ?? ""}`}
       {...props}
     >
       {children}

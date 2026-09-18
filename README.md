@@ -19,6 +19,8 @@ Apri [http://localhost:3000](http://localhost:3000) per il form pubblico.
 ## Pagine
 
 - `/` form staff: nome, cognome, telefono, email, partecipazione dell'anno scorso e ruolo preferito
+- `/privacy` informativa sul trattamento dei dati
+- `/social` liberatoria per foto, video e pubblicazione sui canali social
 - `/grazie` conferma dopo l'invio
 - `/admin` totale risposte, elenco candidature e grafici sui ruoli
 - `/admin/login` accesso admin

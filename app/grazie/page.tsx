@@ -14,6 +14,18 @@ export default function ThanksPage() {
           Abbiamo ricevuto i tuoi dati. Lo staff della Leonessa Cup ti
           ricontatterà se il profilo è in linea con i ruoli aperti.
         </p>
+        <p className="mt-4 text-sm text-white/70">
+          Puoi rileggere in qualsiasi momento l&apos;{" "}
+          <Link href="/privacy" className="text-mint underline underline-offset-2">
+            informativa privacy
+          </Link>{" "}
+          e la{" "}
+          <Link href="/social" className="text-mint underline underline-offset-2">
+            liberatoria riprese
+          </Link>
+          . Per revocare il consenso alle foto e ai video usa i recapiti
+          indicati nei due documenti.
+        </p>
         <Link
           href="/"
           className="mt-8 inline-flex rounded-2xl bg-mint px-5 py-3 font-display tracking-[0.16em] text-navy uppercase"
