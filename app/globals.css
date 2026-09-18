@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --navy: #011674;
+  --mint: #00edaf;
+  --white: #ffffff;
+}
+
+@theme inline {
+  --color-navy: var(--navy);
+  --color-mint: var(--mint);
+  --color-background: var(--navy);
+  --color-foreground: var(--white);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-barlow);
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background: var(--navy);
+  color: var(--white);
+  font-family: var(--font-outfit), sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-barlow), sans-serif;
+}
+
+.court-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 85% -10%, rgba(0, 237, 175, 0.22), transparent 36%),
+    radial-gradient(circle at 0% 110%, rgba(0, 237, 175, 0.16), transparent 32%),
+    #011674;
+}
+
+.court-shell::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 24px;
+  border: 1px solid rgba(0, 237, 175, 0.22);
+  border-radius: 32px;
+}
+
+.court-shell::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  top: -20%;
+  right: -12%;
+  width: 55vw;
+  height: 55vw;
+  border: 18px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  transform: rotate(18deg);
+}
+
+.page-frame {
+  position: relative;
+  z-index: 1;
+}
