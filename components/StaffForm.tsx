@@ -188,7 +188,7 @@ export function StaffForm() {
         </p>
       ) : null}
 
-      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-center lg:gap-10">
+      <div className="flex min-h-0 flex-1 flex-col lg:justify-center lg:gap-4">
         <div
           className={`${
             step < 3 ? "flex min-h-0 flex-1 flex-col" : "hidden"
@@ -290,7 +290,7 @@ export function StaffForm() {
           </section>
         </div>
 
-        <section className={`${stepClass(step, 3, false)} lg:border-l lg:border-white/10 lg:pl-10`}>
+        <section className={`${stepClass(step, 3, false)}`}>
           <StepHeading step={3} current={step} />
           <fieldset className="mt-3 flex min-h-0 flex-1 flex-col lg:mt-3 lg:flex-none">
             <legend className="sr-only lg:not-sr-only lg:mb-3 lg:block lg:text-sm lg:font-medium lg:text-white">

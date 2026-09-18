@@ -23,6 +23,8 @@ Apri [http://localhost:3000](http://localhost:3000) per il form pubblico.
 
 Password admin di default: `leonessa-cup` (modifica `ADMIN_PASSWORD` nel file `.env`).
 
+Su desktop il form usa l'immagine verticale `public/hero.png`: sostituiscila con il file definitivo mantenendo lo stesso nome.
+
 ## Stack
 
 - Next.js 15 e Tailwind
