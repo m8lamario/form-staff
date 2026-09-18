@@ -204,7 +204,7 @@ export function StaffForm() {
               >
                 <span
                   aria-hidden
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${
                     selected ? "bg-navy/10" : "bg-white/10"
                   }`}
                 >

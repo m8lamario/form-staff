@@ -13,7 +13,7 @@ function Icon({ children, ...props }: IconProps & { children: ReactNode }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
-      className="h-5 w-5 shrink-0"
+      className="h-6 w-6 shrink-0"
       {...props}
     >
       {children}
@@ -24,13 +24,9 @@ function Icon({ children, ...props }: IconProps & { children: ReactNode }) {
 function RacchettaPalleIcon() {
   return (
     <Icon>
-      <ellipse cx="14.2" cy="9.2" rx="6.2" ry="7.1" transform="rotate(-28 14.2 9.2)" />
-      <path d="M11.2 5.8 17.4 12.6" />
-      <path d="M9.8 8.6 16.6 14.8" />
-      <path d="M10.6 14.8 5.2 21.2" />
-      <path d="M3.8 19.8h3.4v2.1" />
-      <circle cx="5.6" cy="6.4" r="2.15" />
-      <path d="M4.4 5.2c.7.3 1.6.9 1.9 1.9" />
+      <circle cx="12" cy="12" r="8.2" />
+      <path d="M12 3.8c-3.6 3.2-3.6 13.2 0 16.4" />
+      <path d="M12 3.8c3.6 3.2 3.6 13.2 0 16.4" />
     </Icon>
   );
 }
