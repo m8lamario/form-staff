@@ -8,7 +8,6 @@ datasource db {
 }
 
 enum StaffRole {
-  RACCHETTA_PALLE
   CASSA
   INTERVISTE
   GIORNALE

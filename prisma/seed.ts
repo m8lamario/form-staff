@@ -14,16 +14,6 @@ const sample = [
     mediaConsent: true,
   },
   {
-    firstName: "Luca",
-    lastName: "Bianchi",
-    phone: "+39 347 4455667",
-    email: "luca.bianchi@example.com",
-    participatedLastYear: false,
-    role: StaffRole.RACCHETTA_PALLE,
-    privacyConsent: true,
-    mediaConsent: false,
-  },
-  {
     firstName: "Sara",
     lastName: "Conti",
     phone: "+39 320 9988776",
@@ -72,16 +62,6 @@ const sample = [
     role: StaffRole.GIORNALE,
     privacyConsent: true,
     mediaConsent: true,
-  },
-  {
-    firstName: "Andrea",
-    lastName: "Romano",
-    phone: "+39 340 7788991",
-    email: "andrea.romano@example.com",
-    participatedLastYear: true,
-    role: StaffRole.RACCHETTA_PALLE,
-    privacyConsent: true,
-    mediaConsent: false,
   },
 ];
 

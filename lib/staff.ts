@@ -1,11 +1,10 @@
 export const STAFF_ROLES = [
-  { id: "RACCHETTA_PALLE", label: "Racchetta palle", shortLabel: "Racchetta" },
   { id: "CASSA", label: "Cassa", shortLabel: "Cassa" },
   { id: "INTERVISTE", label: "Interviste", shortLabel: "Interviste" },
   { id: "GIORNALE", label: "Giornale", shortLabel: "Giornale" },
   { id: "FOTOGRAFIA", label: "Fotografia", shortLabel: "Foto" },
   { id: "SOCIAL", label: "Aiuto in gestione social", shortLabel: "Social" },
-  { id: "BUTTA_FUORI", label: "Butta fuori", shortLabel: "Butta fuori" },
+  { id: "BUTTA_FUORI", label: "Sicurezza", shortLabel: "Sicurezza" },
 ] as const;
 
 export type StaffRoleId = (typeof STAFF_ROLES)[number]["id"];

@@ -21,16 +21,6 @@ function Icon({ children, className, ...props }: IconProps & { children: ReactNo
   );
 }
 
-function RacchettaPalleIcon() {
-  return (
-    <Icon>
-      <circle cx="12" cy="12" r="8.2" />
-      <path d="M12 3.8c-3.6 3.2-3.6 13.2 0 16.4" />
-      <path d="M12 3.8c3.6 3.2 3.6 13.2 0 16.4" />
-    </Icon>
-  );
-}
-
 function CassaIcon() {
   return (
     <Icon>
@@ -98,7 +88,6 @@ function ButtaFuoriIcon() {
 }
 
 const ICONS: Record<StaffRoleId, () => ReactNode> = {
-  RACCHETTA_PALLE: RacchettaPalleIcon,
   CASSA: CassaIcon,
   INTERVISTE: IntervisteIcon,
   GIORNALE: GiornaleIcon,

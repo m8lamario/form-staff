@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className="flex h-dvh overflow-hidden lg:h-svh">
+    <main className="flex h-dvh min-h-0 overflow-hidden lg:h-svh">
       <aside className="relative hidden h-full w-[min(38vw,480px)] shrink-0 overflow-hidden xl:w-[min(40vw,520px)] lg:block">
         <Image
           src="/hero.jpg"
@@ -55,7 +55,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#011674] via-[#011674]/30 to-transparent" />
         </div>
 
-        <section className="mt-6 flex min-h-0 flex-1 flex-col justify-center overflow-hidden sm:mt-5 lg:mt-3 lg:justify-start xl:mt-4">
+        <section className="mt-6 flex min-h-0 flex-1 flex-col justify-center overflow-hidden sm:mt-5 lg:mt-3 lg:min-h-0 lg:justify-start xl:mt-4">
           <StaffForm />
         </section>
       </div>

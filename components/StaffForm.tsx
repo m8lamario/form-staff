@@ -168,7 +168,7 @@ export function StaffForm() {
   return (
     <form
       onSubmit={onSubmit}
-      className="flex h-fit max-h-full min-h-0 w-full flex-col overflow-hidden rounded-[28px] border border-white/15 bg-white/10 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-6 lg:h-full lg:px-5 lg:py-3.5 xl:px-8 xl:py-6"
+      className="flex h-fit max-h-full min-h-0 w-full flex-col overflow-hidden rounded-[28px] border border-white/15 bg-white/10 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-6 lg:h-full lg:max-h-[calc(100dvh-4rem)] lg:overflow-y-auto lg:px-5 lg:py-3.5 xl:max-h-[calc(100dvh-5rem)] xl:px-8 xl:py-6"
       noValidate
     >
       <div className="mb-3 shrink-0 lg:hidden">
@@ -201,7 +201,7 @@ export function StaffForm() {
         </p>
       ) : null}
 
-      <div className="min-h-0 flex-1 overflow-y-auto lg:flex lg:flex-col lg:gap-2.5 lg:overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-y-auto lg:flex lg:flex-col lg:gap-2.5 lg:overflow-y-auto lg:overscroll-contain">
         <header className="hidden shrink-0 lg:block">
           <h1 className="font-display text-[1.5rem] tracking-[0.14em] text-white uppercase xl:text-3xl">
             Unisciti allo staff
@@ -293,7 +293,7 @@ export function StaffForm() {
           </fieldset>
         </section>
 
-        <section className={`${stepClass(step, 3, true)} lg:min-h-[7.75rem] lg:overflow-hidden lg:border-t lg:border-white/10 lg:pt-2`}>
+        <section className={`${stepClass(step, 3, true)} lg:min-h-[7.75rem] lg:overflow-visible lg:border-t lg:border-white/10 lg:pt-2`}>
           <StepHeading step={3} current={step} />
           <SectionLabel title="Ruolo preferito" />
           <fieldset className="mt-3 lg:mt-0 lg:flex lg:h-full lg:min-h-0 lg:flex-1 lg:flex-col">
