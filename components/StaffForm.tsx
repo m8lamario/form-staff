@@ -299,22 +299,15 @@ export function StaffForm() {
           <fieldset className="mt-3 lg:mt-0 lg:flex lg:h-full lg:min-h-0 lg:flex-1 lg:flex-col">
             <legend className="sr-only">Ruolo che preferisci svolgere</legend>
             <div className="grid grid-cols-2 content-start gap-2 lg:grid-cols-12 lg:h-full lg:min-h-0 lg:flex-1 lg:content-stretch lg:gap-2.5 lg:overflow-hidden">
-              {STAFF_ROLES.map((role, index) => {
+              {STAFF_ROLES.map((role) => {
                 const selected = form.role === role.id;
-                const lastRow = index >= 4;
                 return (
                   <button
                     key={role.id}
                     type="button"
                     onClick={() => update("role", role.id)}
                     aria-label={role.label}
-                    className={`relative flex min-h-12 items-center gap-2 rounded-2xl border px-2.5 py-2 text-left transition lg:h-full lg:min-h-[2.75rem] lg:w-full lg:px-2.5 lg:py-1.5 ${
-                      index === STAFF_ROLES.length - 1
-                        ? "col-span-2 mx-auto w-[calc(50%-0.25rem)] lg:mx-0 lg:w-full"
-                        : ""
-                    } ${
-                      lastRow ? "lg:col-span-4" : "lg:col-span-3"
-                    } ${
+                    className={`relative flex min-h-12 items-center gap-2 rounded-2xl border px-2.5 py-2 text-left transition lg:col-span-4 lg:h-full lg:min-h-[2.75rem] lg:w-full lg:px-2.5 lg:py-1.5 ${
                       selected
                         ? "border-mint bg-mint text-navy shadow-[0_8px_24px_rgba(0,237,175,0.22)]"
                         : "border-white/15 bg-white/5 text-white hover:border-mint/55 hover:bg-white/[0.08]"

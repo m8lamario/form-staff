@@ -18,8 +18,8 @@ export function BrandMark({
         <Image
           src="/logo-source.webp"
           alt="Logo Leonessa Cup"
-          width={48}
-          height={56}
+          width={96}
+          height={111}
           priority
           className="h-9 w-auto drop-shadow-[0_0_18px_rgba(0,237,175,0.35)] sm:h-10 md:h-12"
         />
@@ -40,10 +40,12 @@ export function BrandMark({
       <Image
         src="/logo-source.webp"
         alt="Logo Leonessa Cup"
-        width={compact ? 88 : 132}
-        height={compact ? 102 : 152}
+        width={96}
+        height={111}
         priority
-        className="drop-shadow-[0_0_28px_rgba(0,237,175,0.35)] transition-transform duration-300 group-hover:scale-[1.03]"
+        className={`w-auto drop-shadow-[0_0_28px_rgba(0,237,175,0.35)] transition-transform duration-300 group-hover:scale-[1.03] ${
+          compact ? "h-20" : "h-[5.5rem] sm:h-32"
+        }`}
       />
       <p
         className={`mt-3 font-display tracking-[0.22em] text-white ${
