@@ -17,6 +17,22 @@ export const metadata: Metadata = {
   title: "Leonessa Cup | Candidatura staff",
   description:
     "Form di candidatura per lo staff della Leonessa Cup: lascia i tuoi dati e il ruolo che preferisci.",
+  icons: {
+    icon: [
+      {
+        url: "/favicon-light.png",
+        type: "image/png",
+        sizes: "192x192",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/favicon-dark.png",
+        type: "image/png",
+        sizes: "192x192",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
