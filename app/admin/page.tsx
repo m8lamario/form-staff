@@ -5,12 +5,23 @@ import { toApplicationDTO } from "@/lib/applications";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+async function loadApplications() {
+  try {
+    const applications = await prisma.staffApplication.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return { applications };
+  } catch (error) {
+    console.error("[admin] Impossibile leggere le candidature", error);
+    return { applications: null };
+  }
+}
+
 export default async function AdminPage() {
-  const applications = await prisma.staffApplication.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const { applications } = await loadApplications();
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-5 py-10 sm:px-8">
@@ -36,7 +47,20 @@ export default async function AdminPage() {
         </p>
       </section>
       <div className="mt-8">
-        <AdminDashboard applications={applications.map(toApplicationDTO)} />
+        {applications ? (
+          <AdminDashboard applications={applications.map(toApplicationDTO)} />
+        ) : (
+          <div className="rounded-3xl border border-white/20 bg-white/10 p-6 text-white">
+            <p className="font-medium">Non riesco a caricare le candidature.</p>
+            <p className="mt-2 text-sm text-white/75">
+              L&apos;accesso è andato a buon fine, ma la lettura del database su
+              Vercel è fallita. In Vercel apri Logs → Runtime (non Build) e
+              cerca <span className="text-mint">[admin]</span>. Controlla che{" "}
+              <code className="text-mint">DATABASE_URL</code> sia impostata
+              per Production, uguale a quella locale.
+            </p>
+          </div>
+        )}
       </div>
     </main>
   );
