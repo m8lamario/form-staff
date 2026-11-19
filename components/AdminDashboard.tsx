@@ -1,8 +1,15 @@
 "use client";
 
-import { ApplicationDTO, roleDistribution } from "@/lib/applications";
+import {
+  ApplicationDTO,
+  flagEntries,
+  hasMediaConsent,
+  roleDistribution,
+} from "@/lib/applications";
+import { REVOKE_LABELS, REVOCABLE_KEYS } from "@/lib/consent-copy";
 import { roleLabel, STAFF_ROLES, type StaffRoleId } from "@/lib/staff";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Fragment, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -32,16 +39,18 @@ type AdminDashboardProps = {
 };
 
 export function AdminDashboard({ applications }: AdminDashboardProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"ALL" | StaffRoleId>("ALL");
   const [mediaFilter, setMediaFilter] = useState<"ALL" | "YES" | "NO">("ALL");
+  const [openId, setOpenId] = useState<number | null>(null);
 
   const distribution = useMemo(
     () => roleDistribution(applications),
     [applications],
   );
   const returningCount = applications.filter((item) => item.participatedLastYear).length;
-  const mediaCount = applications.filter((item) => item.mediaConsent).length;
+  const mediaCount = applications.filter((item) => hasMediaConsent(item)).length;
   const topRole = [...distribution].sort((a, b) => b.count - a.count)[0];
 
   const filtered = useMemo(() => {
@@ -50,8 +59,8 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
       const matchesRole = roleFilter === "ALL" || item.role === roleFilter;
       const matchesMedia =
         mediaFilter === "ALL" ||
-        (mediaFilter === "YES" && item.mediaConsent) ||
-        (mediaFilter === "NO" && !item.mediaConsent);
+        (mediaFilter === "YES" && hasMediaConsent(item)) ||
+        (mediaFilter === "NO" && !hasMediaConsent(item));
       const haystack = `${item.firstName} ${item.lastName} ${item.email} ${item.phone}`.toLowerCase();
       return matchesRole && matchesMedia && (!needle || haystack.includes(needle));
     });
@@ -219,7 +228,7 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
                 <th className="px-3 py-3 font-medium">Anno scorso</th>
                 <th className="px-3 py-3 font-medium">Ruolo</th>
                 <th className="px-3 py-3 font-medium">Privacy</th>
-                <th className="px-3 py-3 font-medium">Riprese</th>
+                <th className="px-3 py-3 font-medium">Stato</th>
                 <th className="px-3 py-3 font-medium">Data</th>
               </tr>
             </thead>
@@ -232,7 +241,8 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
                 </tr>
               ) : (
                 filtered.map((item) => (
-                  <tr key={item.id} className="border-b border-white/10">
+                  <Fragment key={item.id}>
+                  <tr className="border-b border-white/10">
                     <td className="px-3 py-3">{item.firstName}</td>
                     <td className="px-3 py-3">{item.lastName}</td>
                     <td className="px-3 py-3">{item.phone}</td>
@@ -245,18 +255,148 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
                       {item.privacyConsent ? "Sì" : "No"}
                     </td>
                     <td className="px-3 py-3">
-                      {item.mediaConsent ? "Sì" : "No"}
+                      <StatusCell item={item} />
+                      <button
+                        type="button"
+                        onClick={() => setOpenId((current) => (current === item.id ? null : item.id))}
+                        className="mt-2 text-xs uppercase tracking-wide text-mint"
+                      >
+                        {openId === item.id ? "Chiudi" : "Dettaglio"}
+                      </button>
                     </td>
                     <td className="px-3 py-3">
                       {new Date(item.createdAt).toLocaleString("it-IT")}
                     </td>
                   </tr>
+                  {openId === item.id ? (
+                    <tr className="border-b border-white/10">
+                      <td colSpan={9} className="px-3 py-4">
+                        <ApplicationEditor item={item} onDone={() => router.refresh()} />
+                      </td>
+                    </tr>
+                  ) : null}
+                  </Fragment>
                 ))
               )}
             </tbody>
           </table>
         </div>
       </section>
+    </div>
+  );
+}
+
+function StatusCell({ item }: { item: ApplicationDTO }) {
+  return (
+    <div className="flex max-w-xs flex-wrap gap-1">
+      {item.pendingGuardian ? <Chip>In attesa del genitore</Chip> : null}
+      {item.pendingOtherGuardian ? <Chip>In attesa dell&apos;altro genitore</Chip> : null}
+      {item.legacyMediaLabel ? <Chip>{item.legacyMediaLabel}</Chip> : null}
+      {item.legacy ? <Chip>Testi {item.policyVersion}</Chip> : null}
+      {!item.legacy
+        ? flagEntries(item.flags).map((flag) => (
+            <Chip key={flag.key}>
+              {flag.label}: {flag.active ? "sì" : "no"}
+            </Chip>
+          ))
+        : null}
+      {item.applicationStatus ? <Chip>{statusLabel(item.applicationStatus)}</Chip> : null}
+    </div>
+  );
+}
+
+function Chip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-white/80">
+      {children}
+    </span>
+  );
+}
+
+function statusLabel(status: string) {
+  if (status === "pending_guardian") return "In attesa";
+  if (status === "submitted") return "Inviata";
+  if (status === "accepted") return "Accettata";
+  if (status === "rejected") return "Non accolta";
+  return status;
+}
+
+function ApplicationEditor({ item, onDone }: { item: ApplicationDTO; onDone: () => void }) {
+  const [note, setNote] = useState("");
+  const [key, setKey] = useState<string>(REVOCABLE_KEYS[0]);
+  const [role, setRole] = useState<StaffRoleId>(item.role);
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+
+  async function send(body: Record<string, unknown>) {
+    setPending(true);
+    setError("");
+    try {
+      const response = await fetch(`/api/admin/applications/${item.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setError(payload.error ?? "Operazione non riuscita.");
+        return;
+      }
+      onDone();
+    } catch {
+      setError("Connessione non disponibile.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <div className="space-y-3 text-sm text-white/80">
+      {item.birthDate ? <p>Data di nascita: {item.birthDate}. Fascia: {item.ageBand === "minor16_17" ? "16-17 anni" : item.ageBand === "adult" ? "maggiorenne" : "—"}.</p> : null}
+      {item.guardianName ? <p>Genitore di contatto: {item.guardianName}, {item.guardianEmail}, {item.guardianPhone}.</p> : null}
+      {item.secondGuardianName ? <p>Altro genitore: {item.secondGuardianName}, {item.secondGuardianEmail}.</p> : null}
+      {item.legacyRightsNote ? <p>{item.legacyRightsNote}</p> : null}
+      {item.blockers.map((blocker) => (
+        <p key={blocker} className="text-mint">{blocker}</p>
+      ))}
+      {item.legacy ? (
+        <p>Candidatura precedente: resta legata ai testi già accettati e non si modifica da qui.</p>
+      ) : (
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+          <label className="block">
+            Ruolo assegnabile
+            <select value={role} onChange={(event) => setRole(event.target.value as StaffRoleId)} className="mt-1 block rounded-2xl bg-white px-3 py-2 text-navy">
+              {STAFF_ROLES.map((staffRole) => (
+                <option key={staffRole.id} value={staffRole.id}>{staffRole.label}</option>
+              ))}
+            </select>
+          </label>
+          <button type="button" disabled={pending} onClick={() => send({ action: "role", role })} className="rounded-2xl border border-white/20 px-3 py-2">Salva ruolo</button>
+          <button type="button" disabled={pending || item.blockers.length > 0} onClick={() => send({ action: "accept" })} className="rounded-2xl bg-mint px-3 py-2 font-semibold text-navy disabled:opacity-50">Accetta</button>
+          <button type="button" disabled={pending} onClick={() => send({ action: "reject" })} className="rounded-2xl border border-white/20 px-3 py-2">Non accogliere</button>
+        </div>
+      )}
+      {!item.legacy ? (
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-end">
+          <label className="block">
+            Registra revoca
+            <select value={key} onChange={(event) => setKey(event.target.value)} className="mt-1 block rounded-2xl bg-white px-3 py-2 text-navy">
+              {REVOCABLE_KEYS.map((consentKey) => (
+                <option key={consentKey} value={consentKey}>{REVOKE_LABELS[consentKey]}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block min-w-64 flex-1">
+            Nota
+            <input value={note} onChange={(event) => setNote(event.target.value)} className="mt-1 w-full rounded-2xl bg-white px-3 py-2 text-navy" />
+          </label>
+          <button type="button" disabled={pending} onClick={() => send({ action: "revoke", key, note })} className="rounded-2xl border border-white/20 px-3 py-2">Registra revoca</button>
+        </div>
+      ) : null}
+      {!item.legacy && key === "rightsAssignment" ? (
+        <p>La cessione dei diritti non è revocabile per i contenuti già realizzati.</p>
+      ) : null}
+      {error ? <p className="text-mint">{error}</p> : null}
     </div>
   );
 }

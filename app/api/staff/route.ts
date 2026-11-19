@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
-import { MEDIA_POLICY_VERSION, PRIVACY_POLICY_VERSION } from "@/lib/privacy";
+import { createStaffApplication } from "@/lib/staff-record";
 import { validateStaffPayload } from "@/lib/staff";
+import { requestMeta } from "@/lib/tokens";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -11,10 +11,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "Richiesta non valida" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Richiesta non valida" }, { status: 400 });
   }
 
   const result = validateStaffPayload(body);
@@ -23,21 +20,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const created = await prisma.staffApplication.create({
-      data: {
-        ...result.data,
-        privacyConsentAt: new Date(),
-        privacyPolicyVersion: PRIVACY_POLICY_VERSION,
-        mediaConsentAt: new Date(),
-        mediaPolicyVersion: MEDIA_POLICY_VERSION,
-      },
-    });
-    return NextResponse.json({ id: created.id }, { status: 201 });
+    const created = await createStaffApplication(result.data, requestMeta(request));
+    return NextResponse.json({ id: created.id, notice: created.notice }, { status: 201 });
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json(
         { errors: { email: "Questa email ha già inviato una candidatura" } },
         { status: 409 },

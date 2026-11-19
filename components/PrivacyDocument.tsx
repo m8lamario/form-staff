@@ -5,7 +5,7 @@ import {
   PRIVACY_ORG,
   PRIVACY_POLICY_VERSION,
   STAFF_MIN_AGE,
-} from "@/lib/privacy";
+} from "@/lib/privacy-v1";
 import Link from "next/link";
 
 export function PrivacyDocument() {

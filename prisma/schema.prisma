@@ -17,6 +17,47 @@ enum StaffRole {
   BUTTA_FUORI
 }
 
+enum AgeBand {
+  adult
+  minor16_17
+}
+
+enum AgeDeclaration {
+  adult
+  minor16_17
+}
+
+enum ApplicationStatus {
+  pending_guardian
+  submitted
+  accepted
+  rejected
+}
+
+enum GuardianRelation {
+  GENITORE
+  TUTORE
+  AFFIDATARIO
+}
+
+enum G3Choice {
+  other_parent
+  sole_holder
+}
+
+enum ConsentActor {
+  candidate
+  guardian1
+  guardian2
+  admin
+}
+
+enum TokenPurpose {
+  guardian1
+  guardian2
+  revoke
+}
+
 model StaffApplication {
   id                   Int       @id @default(autoincrement())
   firstName            String
@@ -31,10 +72,64 @@ model StaffApplication {
   mediaConsent         Boolean   @default(false)
   mediaConsentAt       DateTime?
   mediaPolicyVersion   String    @default("1.0")
+  birthDate            DateTime? @db.Date
+  ageBand              AgeBand?
+  ageDeclaration       AgeDeclaration?
+  applicationStatus    ApplicationStatus?
+  guardianFirstName    String?
+  guardianLastName     String?
+  guardianRelation     GuardianRelation?
+  guardianEmail        String?
+  guardianPhone        String?
+  g3                   G3Choice?
+  secondGuardianFirstName String?
+  secondGuardianLastName  String?
+  secondGuardianEmail     String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
+  consents             StaffConsent[]
+  tokens               StaffToken[]
 
   @@index([role])
   @@index([createdAt])
   @@index([email])
+  @@index([applicationStatus])
+}
+
+model StaffConsent {
+  id              Int           @id @default(autoincrement())
+  applicationId   Int           @map("application_id")
+  key             String
+  value           String
+  actor           ConsentActor
+  document        String?
+  documentVersion String?       @map("document_version")
+  textHash        String        @map("text_hash")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  ip              String?
+  userAgent       String?       @map("user_agent")
+  revokedAt       DateTime?     @map("revoked_at")
+  revokedBy       ConsentActor? @map("revoked_by")
+  revocationNote  String?       @map("revocation_note")
+  application     StaffApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([key])
+  @@map("staff_consents")
+}
+
+model StaffToken {
+  id             Int              @id @default(autoincrement())
+  applicationId  Int              @map("application_id")
+  purpose        TokenPurpose
+  actor          ConsentActor?
+  tokenHash      String           @unique @map("token_hash")
+  expiresAt      DateTime         @map("expires_at")
+  usedAt         DateTime?        @map("used_at")
+  reminderSentAt DateTime?        @map("reminder_sent_at")
+  application    StaffApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([purpose])
+  @@map("staff_tokens")
 }

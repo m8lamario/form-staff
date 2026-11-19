@@ -3,6 +3,7 @@ import { BrandMark } from "@/components/BrandMark";
 import { LogoutButton } from "@/components/LogoutButton";
 import { toApplicationDTO } from "@/lib/applications";
 import { prisma } from "@/lib/prisma";
+import { purgeUnconfirmedSecondGuardians } from "@/lib/staff-record";
 import Link from "next/link";
 
 export const runtime = "nodejs";
@@ -10,8 +11,10 @@ export const dynamic = "force-dynamic";
 
 async function loadApplications() {
   try {
+    await purgeUnconfirmedSecondGuardians();
     const applications = await prisma.staffApplication.findMany({
       orderBy: { createdAt: "desc" },
+      include: { consents: true },
     });
     return { applications };
   } catch (error) {

@@ -1,5 +1,6 @@
 import { BrandMark } from "@/components/BrandMark";
 import { StaffForm } from "@/components/StaffForm";
+import { LegalFooter } from "@/components/legal/LegalChrome";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -30,6 +31,12 @@ export default function HomePage() {
               Privacy
             </Link>
             <Link
+              href="/termini"
+              className="rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-white/70 hover:border-mint hover:text-mint sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em]"
+            >
+              Condizioni
+            </Link>
+            <Link
               href="/social"
               className="rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-white/70 hover:border-mint hover:text-mint sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em]"
             >
@@ -58,6 +65,7 @@ export default function HomePage() {
         <section className="mt-6 flex min-h-0 flex-1 flex-col justify-center overflow-hidden sm:mt-5 lg:mt-3 lg:min-h-0 lg:justify-start xl:mt-4">
           <StaffForm />
         </section>
+        <LegalFooter compact />
       </div>
     </main>
   );
