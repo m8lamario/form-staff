@@ -11,7 +11,7 @@ import {
   MEDIA_KEYS,
   commsFutureText,
 } from "@/lib/consent-copy";
-import { POLICY_PATHS } from "@/lib/legal";
+import { POLICY_PATHS, PRIVACY_VERSION, SOCIAL_VERSION, TERMS_VERSION, eventPlaceLine, formatEventDates } from "@/lib/legal";
 import {
   STAFF_ROLES,
   emptyStaffForm,
@@ -26,12 +26,14 @@ import {
 } from "@/lib/staff";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 const NOTICE_KEY = "leonessa_staff_notice";
 
-export function StaffForm() {
+export function StaffForm({ applicationsClosed = false }: { applicationsClosed?: boolean }) {
   const router = useRouter();
+  const startedAt = useRef(Date.now());
+  const [website, setWebsite] = useState("");
   const [form, setForm] = useState<StaffFormInput>(emptyStaffForm);
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -79,6 +81,8 @@ export function StaffForm() {
     const stepErrors = getStepErrors(form, safeStep);
     if (Object.keys(stepErrors).length > 0) {
       setErrors(stepErrors);
+      setSubmitError("Controlla i campi evidenziati.");
+      focusFirstInvalid(stepErrors);
       return;
     }
     setErrors({});
@@ -94,6 +98,7 @@ export function StaffForm() {
         setStep(stepForField(firstError, uiAge === "underage" ? null : uiAge));
       }
       setSubmitError("Controlla i campi evidenziati.");
+      focusFirstInvalid(result.errors);
       return;
     }
 
@@ -103,7 +108,7 @@ export function StaffForm() {
       const response = await fetch("/api/staff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, website, formStartedAt: startedAt.current }),
       });
       const payload = (await response.json()) as {
         errors?: FieldErrors;
@@ -114,6 +119,7 @@ export function StaffForm() {
         const nextErrors = payload.errors ?? {};
         setErrors(nextErrors);
         setSubmitError(payload.error ?? "Controlla i campi evidenziati.");
+        focusFirstInvalid(nextErrors);
         const firstError = Object.keys(nextErrors)[0];
         if (firstError && !isWideViewport()) {
           setStep(stepForField(firstError, uiAge === "underage" ? null : uiAge));
@@ -153,12 +159,27 @@ export function StaffForm() {
     return `${mobile} ${desktop}`;
   };
 
+  if (applicationsClosed) {
+    return (
+      <div className="rounded-[28px] border border-white/15 bg-white/10 p-6 text-white">
+        <h1 className="font-display text-3xl tracking-widest uppercase">Candidature chiuse</h1>
+        <p className="mt-2 text-sm text-white/75">{eventPlaceLine()} · {formatEventDates()}</p>
+      </div>
+    );
+  }
+
   return (
     <form
       onSubmit={onSubmit}
       className="flex h-fit max-h-full min-h-0 w-full flex-col overflow-hidden rounded-[28px] border border-white/15 bg-white/10 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-6 lg:h-full lg:max-h-[calc(100dvh-6.5rem)] lg:overflow-hidden lg:px-5 lg:py-3.5 xl:max-h-[calc(100dvh-7rem)] xl:px-8 xl:py-6"
       noValidate
     >
+      <p className="absolute left-[-9999px] h-px w-px overflow-hidden" aria-hidden="true">
+        <label>
+          Sito web
+          <input tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} />
+        </label>
+      </p>
       <div className="mb-3 shrink-0 lg:hidden">
         <div className="flex gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={steps.length} aria-valuenow={safeStep + 1} aria-label="Avanzamento iscrizione">
           {steps.map((item, index) => (
@@ -167,6 +188,9 @@ export function StaffForm() {
         </div>
         <p className="mt-2 text-[11px] uppercase tracking-[0.22em] text-mint">
           Passo {safeStep + 1} di {steps.length} · {currentStep.title}
+        </p>
+        <p className="mt-1 text-xs text-white/80 lg:hidden">
+          {eventPlaceLine()} · {formatEventDates()}
         </p>
       </div>
 
@@ -181,6 +205,9 @@ export function StaffForm() {
           <h1 className="font-display text-[1.5rem] tracking-[0.14em] text-white uppercase xl:text-3xl">
             Unisciti allo staff
           </h1>
+          <p className="mt-1 text-sm font-medium text-white/90">
+            {eventPlaceLine()} · {formatEventDates()}
+          </p>
           <p className="mt-1 max-w-xl text-sm leading-5 text-white/70">
             Volontariato dai 16 anni. Se hai 16 o 17 anni, la candidatura vale dopo la conferma di un genitore.
           </p>
@@ -197,16 +224,23 @@ export function StaffForm() {
               <div className="sm:col-span-2">
                 <Field id="birthDate" label="Data di nascita" type="date" value={form.birthDate} error={errors.birthDate} autoComplete="bday" onChange={(value) => update("birthDate", value)} />
               </div>
-              <fieldset className="sm:col-span-2">
+              <fieldset className="sm:col-span-2" aria-describedby={errors.ageDeclaration ? "ageDeclaration-error" : undefined}>
                 <legend className="mb-2 text-[13px] font-medium text-white/90">Fascia d&apos;età</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {(Object.keys(AGE_DECLARATION_TEXT) as Array<keyof typeof AGE_DECLARATION_TEXT>).map((key) => (
-                    <ChoiceButton key={key} selected={form.ageDeclaration === key} onClick={() => update("ageDeclaration", key)}>
+                  {(Object.keys(AGE_DECLARATION_TEXT) as Array<keyof typeof AGE_DECLARATION_TEXT>).map((key, index) => (
+                    <RadioOption
+                      key={key}
+                      id={index === 0 ? "ageDeclaration" : `age-${key}`}
+                      name="ageDeclaration"
+                      checked={form.ageDeclaration === key}
+                      describedBy={errors.ageDeclaration ? "ageDeclaration-error" : undefined}
+                      onChange={() => update("ageDeclaration", key)}
+                    >
                       {AGE_DECLARATION_TEXT[key]}
-                    </ChoiceButton>
+                    </RadioOption>
                   ))}
                 </div>
-                {errors.ageDeclaration ? <p className="mt-2 text-sm text-mint">{errors.ageDeclaration}</p> : null}
+                {errors.ageDeclaration ? <p id="ageDeclaration-error" className="mt-2 text-sm text-mint">{errors.ageDeclaration}</p> : null}
               </fieldset>
             </div>
             <div className={safeStep === 1 ? "contents" : "hidden lg:contents"}>
@@ -218,16 +252,15 @@ export function StaffForm() {
 
         <section className={`${show("experience")} lg:border-t lg:border-white/10 lg:pt-2`}>
           <StepHeading stepId="experience" currentId={currentStep.id} steps={steps} />
-          <fieldset className="mt-3 lg:mt-0">
-            <legend className="sr-only">Hai partecipato allo staff l&apos;anno scorso?</legend>
-            <div className="lg:flex lg:items-center lg:justify-between lg:gap-4">
-              <p className="mb-4 hidden text-sm font-medium text-white lg:mb-0 lg:block">Hai partecipato allo staff l&apos;anno scorso?</p>
+          <fieldset className="mt-3 lg:mt-0 lg:flex lg:items-center lg:justify-between lg:gap-4" aria-describedby={errors.participatedLastYear ? "participatedLastYear-error" : undefined}>
+            <legend className="mb-4 text-sm font-medium text-white lg:mb-0">Hai partecipato allo staff l&apos;anno scorso?</legend>
+            <div>
               <div className="grid grid-cols-2 gap-3 lg:w-[min(100%,280px)] lg:shrink-0">
-                <ChoiceButton selected={form.participatedLastYear === true} onClick={() => update("participatedLastYear", true)}>Sì</ChoiceButton>
-                <ChoiceButton selected={form.participatedLastYear === false} onClick={() => update("participatedLastYear", false)}>No</ChoiceButton>
+                <RadioOption id="participatedLastYear" name="participatedLastYear" checked={form.participatedLastYear === true} describedBy={errors.participatedLastYear ? "participatedLastYear-error" : undefined} onChange={() => update("participatedLastYear", true)}>Sì</RadioOption>
+                <RadioOption name="participatedLastYear" checked={form.participatedLastYear === false} describedBy={errors.participatedLastYear ? "participatedLastYear-error" : undefined} onChange={() => update("participatedLastYear", false)}>No</RadioOption>
               </div>
             </div>
-            {errors.participatedLastYear ? <p className="mt-2 text-sm text-mint">{errors.participatedLastYear}</p> : null}
+            {errors.participatedLastYear ? <p id="participatedLastYear-error" className="mt-2 basis-full text-sm text-mint">{errors.participatedLastYear}</p> : null}
           </fieldset>
         </section>
 
@@ -241,20 +274,15 @@ export function StaffForm() {
                 const locked = minor && isAdultOnlyRole(role.id);
                 const selected = form.role === role.id;
                 return (
-                  <button
+                  <RadioOption
                     key={role.id}
-                    type="button"
+                    id={role.id === "CASSA" ? "role" : `role-${role.id}`}
+                    name="role"
+                    checked={selected}
                     disabled={locked}
-                    onClick={() => update("role", role.id)}
-                    aria-label={locked ? `${role.label}, riservato ai maggiorenni` : role.label}
-                    aria-pressed={selected}
-                    className={`relative flex min-h-12 items-center gap-2 rounded-2xl border px-2.5 py-2 text-left transition lg:col-span-4 ${
-                      locked
-                        ? "cursor-not-allowed border-white/10 bg-white/5 text-white/40"
-                        : selected
-                          ? "border-mint bg-mint text-navy shadow-[0_8px_24px_rgba(0,237,175,0.22)]"
-                          : "border-white/15 bg-white/5 text-white hover:border-mint/55"
-                    }`}
+                    describedBy={errors.role ? "role-error" : undefined}
+                    className={`relative lg:col-span-4 ${locked ? "cursor-not-allowed border-white/10 bg-white/5 text-white/40" : selected ? "border-mint bg-mint text-navy shadow-[0_8px_24px_rgba(0,237,175,0.22)]" : "border-white/15 bg-white/5 text-white hover:border-mint/55"}`}
+                    onChange={() => update("role", role.id)}
                   >
                     <span aria-hidden className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${selected && !locked ? "bg-navy/10" : "bg-white/10"}`}>
                       <RoleIcon role={role.id} />
@@ -263,11 +291,11 @@ export function StaffForm() {
                       {role.shortLabel}
                       {locked ? <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-wide">Riservato ai maggiorenni</span> : null}
                     </span>
-                  </button>
+                  </RadioOption>
                 );
               })}
             </div>
-            {errors.role ? <p className="mt-2 text-sm text-mint">{errors.role}</p> : null}
+            {errors.role ? <p id="role-error" className="mt-2 text-sm text-mint">{errors.role}</p> : null}
             {minor && isMediaRole(form.role) ? (
               <p className="mt-2 text-sm text-white/70">
                 Per questo ruolo la cessione dei diritti la conferma il genitore. Senza quella conferma il ruolo andrà cambiato.
@@ -301,10 +329,10 @@ export function StaffForm() {
               <fieldset className="sm:col-span-2">
                 <legend className="mb-2 text-[13px] font-medium text-white/90">Responsabilità genitoriale</legend>
                 <div className="grid gap-2">
-                  <ChoiceButton selected={form.g3 === "other_parent"} onClick={() => update("g3", "other_parent")}>{G3_TEXT.other_parent}</ChoiceButton>
-                  <ChoiceButton selected={form.g3 === "sole_holder"} onClick={() => update("g3", "sole_holder")}>{G3_TEXT.sole_holder}</ChoiceButton>
+                  <RadioOption id="g3" name="g3" checked={form.g3 === "other_parent"} describedBy={errors.g3 ? "g3-error" : undefined} onChange={() => update("g3", "other_parent")}>{G3_TEXT.other_parent}</RadioOption>
+                  <RadioOption name="g3" checked={form.g3 === "sole_holder"} describedBy={errors.g3 ? "g3-error" : undefined} onChange={() => update("g3", "sole_holder")}>{G3_TEXT.sole_holder}</RadioOption>
                 </div>
-                {errors.g3 ? <p className="mt-2 text-sm text-mint">{errors.g3}</p> : null}
+                {errors.g3 ? <p id="g3-error" className="mt-2 text-sm text-mint">{errors.g3}</p> : null}
               </fieldset>
               {form.g3 === "other_parent" ? (
                 <>
@@ -352,11 +380,11 @@ export function StaffForm() {
                   {linkedAdultPrivacy()}
                 </CheckField>
                 <CheckField id="termsAccepted" checked={form.termsAccepted} error={errors.termsAccepted} onChange={(value) => update("termsAccepted", value)}>
-                  Accetto le <DocLink href={POLICY_PATHS.termini}>condizioni della candidatura staff volontario e le regole di condotta</DocLink> (versione 1.0).
+                  Accetto le <DocLink href={POLICY_PATHS.termini}>condizioni della candidatura staff volontario e le regole di condotta</DocLink> (versione {TERMS_VERSION}).
                 </CheckField>
                 {isMediaRole(form.role) ? (
                   <CheckField id="rightsAssignment" checked={form.rightsAssignment} error={errors.rightsAssignment} onChange={(value) => update("rightsAssignment", value)}>
-                    Cedo a ESL, a titolo gratuito, i diritti di utilizzazione economica sui contenuti che realizzerò come staff, con facoltà di sublicenza ai media partner di ESL, nei termini dell&apos;<DocLink href={POLICY_PATHS.diritti}>art. 8 delle condizioni</DocLink>. I miei diritti morali di autore restano salvi.
+                    Cedo a ESL, a titolo gratuito e in esclusiva, i diritti di utilizzazione economica sui contenuti che realizzerò come staff, con facoltà di sublicenza ai media partner di ESL, nei termini dell&apos;<DocLink href={POLICY_PATHS.diritti}>art. 8 delle condizioni</DocLink>. I miei diritti morali di autore restano salvi.
                   </CheckField>
                 ) : null}
                 <fieldset className="rounded-2xl border border-white/15 bg-white/[0.04] px-3 py-3">
@@ -371,7 +399,7 @@ export function StaffForm() {
                     ))}
                   </div>
                   <p className="mt-3 text-sm leading-5 text-white/70">
-                    Spuntando una casella confermi di aver letto la <DocLink href={POLICY_PATHS.social}>liberatoria completa</DocLink> (versione 2.0). Le caselle sono facoltative: puoi candidarti anche senza spuntarne nessuna. Puoi revocare ogni autorizzazione in qualsiasi momento scrivendo a privacy@legacalciostudenti.it.
+                    Spuntando una casella confermi di aver letto la <DocLink href={POLICY_PATHS.social}>liberatoria completa</DocLink> (versione {SOCIAL_VERSION}). Le caselle sono facoltative: puoi candidarti anche senza spuntarne nessuna. Puoi revocare ogni autorizzazione in qualsiasi momento scrivendo a privacy@legacalciostudenti.it.
                   </p>
                 </fieldset>
                 <CheckField id="comms_future" checked={form.comms_future} onChange={(value) => update("comms_future", value)}>
@@ -403,7 +431,7 @@ export function StaffForm() {
 function linkedAdultPrivacy() {
   return (
     <>
-      Ho letto l&apos;<DocLink href={POLICY_PATHS.privacy}>informativa privacy</DocLink> (versione 2.0) e ne ho compreso i contenuti.
+      Ho letto l&apos;<DocLink href={POLICY_PATHS.privacy}>informativa privacy</DocLink> (versione {PRIVACY_VERSION}) e ne ho compreso i contenuti.
     </>
   );
 }
@@ -439,11 +467,69 @@ function StepHeading({
   );
 }
 
-function ChoiceButton({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
+function focusFirstInvalid(errors: FieldErrors) {
+  const order = [
+    "firstName",
+    "lastName",
+    "birthDate",
+    "ageDeclaration",
+    "phone",
+    "email",
+    "participatedLastYear",
+    "role",
+    "guardianFirstName",
+    "guardianLastName",
+    "guardianRelation",
+    "guardianEmail",
+    "guardianPhone",
+    "g3",
+    "secondGuardianFirstName",
+    "secondGuardianLastName",
+    "secondGuardianEmail",
+    "privacyRead",
+    "termsRead",
+    "termsAccepted",
+    "rightsAssignment",
+    "g16",
+  ];
+  const key = order.find((item) => errors[item]) ?? Object.keys(errors)[0];
+  if (!key) return;
+  document.getElementById(key)?.focus();
+}
+
+function RadioOption({
+  id,
+  name,
+  checked,
+  disabled,
+  describedBy,
+  onChange,
+  className,
+  children,
+}: {
+  id?: string;
+  name: string;
+  checked: boolean;
+  disabled?: boolean;
+  describedBy?: string;
+  onChange: () => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <button type="button" onClick={onClick} aria-pressed={selected} className={`min-h-12 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${selected ? "border-mint bg-mint text-navy" : "border-white/20 bg-white/5 text-white hover:border-mint/60"}`}>
+    <label className={`flex min-h-12 items-center gap-2 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-white ${className ?? (checked ? "border-mint bg-mint text-navy" : "border-white/20 bg-white/5 text-white hover:border-mint/60")}`}>
+      <input
+        id={id}
+        type="radio"
+        name={name}
+        checked={checked}
+        disabled={disabled}
+        onChange={onChange}
+        aria-describedby={describedBy}
+        className="sr-only"
+      />
       {children}
-    </button>
+    </label>
   );
 }
 
@@ -485,10 +571,11 @@ function Field({
         autoComplete={autoComplete}
         placeholder={placeholder}
         aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${id}-error` : undefined}
         onChange={(event) => onChange(event.target.value)}
         className={`w-full rounded-2xl border bg-white/95 px-4 py-3 text-[15px] text-navy outline-none placeholder:text-navy/40 ${error ? "border-mint ring-2 ring-mint/40" : "border-transparent focus:ring-2 focus:ring-mint"}`}
       />
-      {error ? <span className="mt-1.5 block text-sm text-mint">{error}</span> : null}
+      {error ? <span id={`${id}-error`} className="mt-1.5 block text-sm text-mint">{error}</span> : null}
     </label>
   );
 }
@@ -509,12 +596,12 @@ function CheckField({
   return (
     <div className="rounded-2xl border border-white/15 bg-white/[0.04] px-3 py-3">
       <div className="flex items-start gap-3">
-        <input id={id} type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="mt-1 h-5 w-5 shrink-0 accent-[#00edaf]" />
+        <input id={id} type="checkbox" checked={checked} aria-invalid={Boolean(error)} aria-describedby={error ? `${id}-error` : undefined} onChange={(event) => onChange(event.target.checked)} className="mt-1 h-5 w-5 shrink-0 accent-[#00edaf]" />
         <label htmlFor={id} className="text-sm leading-6 text-white">
           {children}
         </label>
       </div>
-      {error ? <p className="mt-2 text-sm text-mint">{error}</p> : null}
+      {error ? <p id={`${id}-error`} className="mt-2 text-sm text-mint">{error}</p> : null}
     </div>
   );
 }

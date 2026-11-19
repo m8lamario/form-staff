@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Informativa cookie | Leonessa Cup",
   description: "Cookie e storage tecnici usati da leonessacup.app.",
+  alternates: { canonical: "/cookie" },
 };
 
 export default function CookiePage() {

@@ -1,6 +1,7 @@
 import { BrandMark } from "@/components/BrandMark";
 import { StaffForm } from "@/components/StaffForm";
 import { LegalFooter } from "@/components/legal/LegalChrome";
+import { PUBLIC_HEADER_NAV, applicationsOpen } from "@/lib/legal";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -24,30 +25,15 @@ export default function HomePage() {
         <header className="flex shrink-0 items-center justify-between gap-2 sm:gap-3">
           <BrandMark layout="row" />
           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
-            <Link
-              href="/privacy"
-              className="rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-white/70 hover:border-mint hover:text-mint sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em]"
-            >
-              Privacy
-            </Link>
-            <Link
-              href="/termini"
-              className="rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-white/70 hover:border-mint hover:text-mint sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em]"
-            >
-              Condizioni
-            </Link>
-            <Link
-              href="/social"
-              className="rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-white/70 hover:border-mint hover:text-mint sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em]"
-            >
-              Riprese
-            </Link>
-            <Link
-              href="/admin/login"
-              className="hidden rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-white/70 hover:border-mint hover:text-mint sm:inline-flex sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em]"
-            >
-              Admin
-            </Link>
+            {PUBLIC_HEADER_NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-full border border-white/20 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-white/70 hover:border-mint hover:text-mint sm:px-3 sm:py-1.5 sm:text-[11px] sm:tracking-[0.16em]"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </header>
 
@@ -63,7 +49,7 @@ export default function HomePage() {
         </div>
 
         <section className="mt-6 flex min-h-0 flex-1 flex-col justify-center overflow-hidden sm:mt-5 lg:mt-3 lg:min-h-0 lg:justify-start xl:mt-4">
-          <StaffForm />
+          <StaffForm applicationsClosed={!applicationsOpen()} />
         </section>
         <LegalFooter compact />
       </div>

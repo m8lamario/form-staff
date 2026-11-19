@@ -1,6 +1,6 @@
-import { PolicyTodo } from "@/components/PolicyTodo";
+import { LegalReviewNote } from "@/components/PolicyTodo";
 import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
-import { CONTROLLER, POLICY_PATHS, PRIVACY_MINOR_VERSION } from "@/lib/legal";
+import { CONTROLLER, LEGAL, POLICY_PATHS, PRIVACY_MINOR_VERSION } from "@/lib/legal";
 import Link from "next/link";
 
 const linkClass = "text-mint underline underline-offset-2";
@@ -12,11 +12,14 @@ export function MinoriDocument() {
       <p>
         Informativa sul trattamento dei dati personali del minore e dei
         genitori — staff Leonessa Cup, ai sensi degli artt. 13 e 14 GDPR.
-        Leonessa Cup, stagione 2026/2027 — versione {PRIVACY_MINOR_VERSION}.
+        Leonessa Cup, stagione 2026/2027 — versione {PRIVACY_MINOR_VERSION}. La
+        versione precedente resta consultabile:{" "}
+        <Link href={POLICY_PATHS.minoriArchive} className={linkClass}>
+          informativa minori 1.0
+        </Link>
+        .
       </p>
-      <PolicyTodo block>
-        DA VALIDARE LEGALMENTE.
-      </PolicyTodo>
+      <LegalReviewNote block>DA VALIDARE LEGALMENTE.</LegalReviewNote>
       <p>
         Gentili genitori, i dati dei ragazzi minorenni meritano una protezione
         specifica (considerando 38 GDPR). Vi chiediamo di leggere questa
@@ -73,16 +76,16 @@ export function MinoriDocument() {
             deve dichiarare che l&apos;altro genitore è deceduto, decaduto,
             sospeso o non riconosce il figlio, o che c&apos;è un provvedimento
             che gli attribuisce in via esclusiva anche queste decisioni.{" "}
-            <PolicyTodo>DA VALIDARE LEGALMENTE</PolicyTodo>
+            <LegalReviewNote>DA VALIDARE LEGALMENTE</LegalReviewNote>
           </li>
           <li>
             Senza la conferma C1 la candidatura può essere accolta, ma il minore
             non è pubblicabile in modo riconoscibile e non può svolgere i ruoli
             che richiedono la cessione dei diritti.{" "}
-            <PolicyTodo>
+            <LegalReviewNote>
               DA VALIDARE LEGALMENTE: se anche la candidatura richieda entrambi i
               genitori. Oggi, come su LCS, basta il genitore di contatto.
-            </PolicyTodo>
+            </LegalReviewNote>
           </li>
         </ol>
       </section>
@@ -135,9 +138,9 @@ export function MinoriDocument() {
         <LegalHeading>Tutele per i minori nello staff</LegalHeading>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           <li>
-            Turni compatibili con l&apos;età e con gli impegni scolastici, sempre
-            con un referente adulto di ESL.{" "}
-            <PolicyTodo>DA DECIDERE: orario massimo, es. non oltre le 22:00.</PolicyTodo>
+            Turni di <strong>massimo {LEGAL.volunteering.minorMaxShiftHours} ore</strong>,
+            compatibili con l&apos;età e con gli impegni scolastici, sempre con un
+            referente adulto di ESL.
           </li>
           <li>Niente ruoli Cassa e Sicurezza.</li>
           <li>Nelle didascalie: nome e iniziale del cognome, salvo consenso al cognome completo.</li>

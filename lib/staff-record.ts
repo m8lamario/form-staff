@@ -25,13 +25,15 @@ import {
   type MediaKey,
 } from "@/lib/consent-copy";
 import type { GuardianConfirmData } from "@/lib/guardian";
+import { adultChoiceSummary, mailConfirmation, mailGuardianInvite, mailReinform, mailSecondGuardian } from "@/lib/email/dispatch";
+import { choiceLines } from "@/lib/email/messages";
 import {
   PRIVACY_MINOR_VERSION,
   PRIVACY_VERSION,
   SOCIAL_VERSION,
   TERMS_VERSION,
   TOKEN_TTL_DAYS,
-  guardianEmailEnabled,
+  isPreV2,
 } from "@/lib/legal";
 import { prisma } from "@/lib/prisma";
 import {
@@ -199,14 +201,13 @@ function withDevLinks(
   };
 }
 
-async function mailResult(): Promise<{ sent: false; reason: string }> {
-  if (!guardianEmailEnabled()) {
-    return { sent: false, reason: "GUARDIAN_EMAIL_ENABLED=false" };
+async function safeMail(task: () => Promise<{ sent: boolean; reason?: string }>): Promise<{ sent: boolean; reason?: string }> {
+  try {
+    return await task();
+  } catch (error) {
+    console.error("[leonessa-email]", error);
+    return { sent: false, reason: "Invio email non riuscito" };
   }
-  return {
-    sent: false,
-    reason: "Nessun servizio email è presente nelle dipendenze del progetto",
-  };
 }
 
 export async function createStaffApplication(data: StaffPayload, meta: RequestMeta) {
@@ -214,7 +215,6 @@ export async function createStaffApplication(data: StaffPayload, meta: RequestMe
   const expiresAt = addDays(now, TOKEN_TTL_DAYS);
   const guardianRaw = data.guardian ? newToken() : null;
   const revokeRaw = newToken();
-  const mail = await mailResult();
 
   const created = await prisma.staffApplication.create({
     data: {
@@ -265,6 +265,35 @@ export async function createStaffApplication(data: StaffPayload, meta: RequestMe
       },
     },
   });
+
+  const mail =
+    data.ageBand === "minor16_17" && data.guardian && guardianRaw
+      ? await safeMail(() =>
+          mailGuardianInvite({
+            applicationId: created.id,
+            to: data.guardian!.email,
+            guardianName: `${data.guardian!.firstName} ${data.guardian!.lastName}`.trim(),
+            minorName: `${data.firstName} ${data.lastName}`.trim(),
+            birthDate: data.birthDate,
+            roleLabel: roleLabel(data.role),
+            token: guardianRaw,
+          }),
+        )
+      : await safeMail(() =>
+          mailConfirmation({
+            applicationId: created.id,
+            to: data.email,
+            recipientName: data.firstName,
+            personName: `${data.firstName} ${data.lastName}`.trim(),
+            summary: adultChoiceSummary({
+              ...data.media,
+              rightsAssignment: data.rightsAssignment,
+              comms_future: data.comms_future,
+            }),
+            revokeToken: revokeRaw,
+            audience: "adult",
+          }),
+        );
 
   const notice = withDevLinks(
     {
@@ -412,7 +441,6 @@ export async function confirmGuardian(raw: string, data: GuardianConfirmData, me
   const secondRaw = data.g3 === "other_parent" ? newToken() : null;
   const revokeRaw = newToken();
   const expiresAt = addDays(new Date(), TOKEN_TTL_DAYS);
-  const mail = await mailResult();
 
   await prisma.$transaction([
     prisma.staffApplication.update({
@@ -456,14 +484,44 @@ export async function confirmGuardian(raw: string, data: GuardianConfirmData, me
       : []),
   ]);
 
+  const summary = choiceLines({
+    ...data.media,
+    fullSurname: data.fullSurname,
+    rightsAssignment: isMediaRole(app.role) ? data.rightsAssignment : undefined,
+  });
+  const mail =
+    data.g3 === "other_parent" && data.second && secondRaw
+      ? await safeMail(() =>
+          mailSecondGuardian({
+            applicationId: app.id,
+            to: data.second!.email,
+            minorName,
+            firstGuardianName: `${app.guardianFirstName ?? ""} ${app.guardianLastName ?? ""}`.trim(),
+            roleLabel: roleLabel(app.role),
+            summary,
+            token: secondRaw,
+          }),
+        )
+      : await safeMail(() =>
+          mailConfirmation({
+            applicationId: app.id,
+            to: app.guardianEmail ?? "",
+            recipientName: `${app.guardianFirstName ?? ""} ${app.guardianLastName ?? ""}`.trim(),
+            personName: minorName,
+            summary,
+            revokeToken: revokeRaw,
+            audience: "guardian",
+          }),
+        );
+
   return {
     ok: true as const,
     notice: withDevLinks(
       {
         kind: "minor" as const,
-        guardianEmail: data.second?.email,
+        guardianEmail: data.g3 === "other_parent" ? data.second?.email : app.guardianEmail ?? undefined,
         emailSent: mail.sent,
-        emailReason: data.g3 === "other_parent" ? mail.reason : undefined,
+        emailReason: mail.reason,
       },
       { second: secondRaw, revoke: revokeRaw },
     ),
@@ -512,6 +570,7 @@ export async function confirmSecondGuardian(
   if (!loaded.ok) return loaded;
   const app = loaded.token.application;
   const confirmed = decision === "confirm";
+  const revokeRaw = confirmed ? newToken() : null;
   await prisma.$transaction([
     prisma.staffConsent.create({
       data: {
@@ -530,7 +589,59 @@ export async function confirmSecondGuardian(
       where: { id: loaded.token.id },
       data: { usedAt: new Date() },
     }),
+    ...(revokeRaw
+      ? [
+          prisma.staffToken.create({
+            data: {
+              applicationId: app.id,
+              purpose: "revoke" as const,
+              actor: "guardian2" as const,
+              tokenHash: hashToken(revokeRaw),
+              expiresAt: addDays(new Date(), TOKEN_TTL_DAYS),
+            },
+          }),
+        ]
+      : []),
   ]);
+  if (confirmed && revokeRaw) {
+    const snapshots = toSnapshots(app.consents);
+    const summary = choiceLines(
+      Object.fromEntries(
+        ["media_channels", "media_promo", "media_sponsor", "media_press", "media_interviews", "fullSurname", "rightsAssignment"].map(
+          (key) => {
+            const row = [...snapshots].reverse().find((item) => item.key === key && item.actor === "guardian1");
+            return [key, row?.value === "true" && !row.revokedAt];
+          },
+        ),
+      ),
+    );
+    const minorName = `${app.firstName} ${app.lastName}`;
+    await safeMail(() =>
+      mailConfirmation({
+        applicationId: app.id,
+        to: app.guardianEmail ?? "",
+        recipientName: `${app.guardianFirstName ?? ""} ${app.guardianLastName ?? ""}`.trim(),
+        personName: minorName,
+        summary,
+        revokeToken: revokeRaw,
+        audience: "guardian",
+      }),
+    );
+    if (app.secondGuardianEmail) {
+      await safeMail(() =>
+        mailConfirmation({
+          applicationId: app.id,
+          to: app.secondGuardianEmail ?? "",
+          recipientName: `${app.secondGuardianFirstName ?? ""} ${app.secondGuardianLastName ?? ""}`.trim(),
+          personName: minorName,
+          summary,
+          revokeToken: revokeRaw,
+          audience: "guardian",
+          kind: "guardian2_confirm",
+        }),
+      );
+    }
+  }
   return { ok: true as const, confirmed };
 }
 
@@ -604,7 +715,7 @@ export async function setApplicationStatus(id: number, status: "accepted" | "rej
     where: { id },
     include: { consents: true },
   });
-  if (!app || app.privacyPolicyVersion !== PRIVACY_VERSION) {
+  if (!app || isPreV2(app.privacyPolicyVersion)) {
     return { ok: false as const, error: "Le candidature già inviate non si modificano da qui" };
   }
   if (status === "accepted") {
@@ -627,7 +738,7 @@ export async function setApplicationStatus(id: number, status: "accepted" | "rej
 
 export async function setApplicationRole(id: number, role: string) {
   const app = await prisma.staffApplication.findUnique({ where: { id } });
-  if (!app || app.privacyPolicyVersion !== PRIVACY_VERSION) {
+  if (!app || isPreV2(app.privacyPolicyVersion)) {
     return { ok: false as const, error: "Le candidature già inviate non si modificano da qui" };
   }
   if (!["CASSA", "INTERVISTE", "GIORNALE", "FOTOGRAFIA", "SOCIAL", "BUTTA_FUORI"].includes(role)) {
@@ -647,7 +758,7 @@ export async function purgeUnconfirmedSecondGuardians(now = new Date()) {
   const cutoff = addDays(now, -TOKEN_TTL_DAYS);
   const rows = await prisma.staffApplication.findMany({
     where: {
-      privacyPolicyVersion: PRIVACY_VERSION,
+      privacyPolicyVersion: { startsWith: "2." },
       g3: "other_parent",
       secondGuardianEmail: { not: null },
       createdAt: { lt: cutoff },
@@ -670,4 +781,146 @@ export async function purgeUnconfirmedSecondGuardians(now = new Date()) {
 
 export function choiceFlags(ageBand: AgeBand | null, g3: G3Choice | null, consents: ConsentSnapshot[]) {
   return publicationFlags({ ageBand, g3, consents });
+}
+
+export async function resendGuardianInvite(applicationId: number) {
+  const app = await prisma.staffApplication.findUnique({ where: { id: applicationId } });
+  if (!app?.guardianEmail || app.applicationStatus !== "pending_guardian" || isPreV2(app.privacyPolicyVersion)) {
+    return { ok: false as const, error: "Non c'è un invito al genitore da reinviare" };
+  }
+  const raw = newToken();
+  const now = new Date();
+  await prisma.$transaction([
+    prisma.staffToken.updateMany({
+      where: { applicationId, purpose: "guardian1", usedAt: null },
+      data: { usedAt: now },
+    }),
+    prisma.staffToken.create({
+      data: {
+        applicationId,
+        purpose: "guardian1",
+        actor: "guardian1",
+        tokenHash: hashToken(raw),
+        expiresAt: addDays(now, TOKEN_TTL_DAYS),
+      },
+    }),
+  ]);
+  const mail = await safeMail(() =>
+    mailGuardianInvite({
+      applicationId,
+      to: app.guardianEmail ?? "",
+      guardianName: `${app.guardianFirstName ?? ""} ${app.guardianLastName ?? ""}`.trim(),
+      minorName: `${app.firstName} ${app.lastName}`,
+      birthDate: formatStoredDate(app.birthDate),
+      roleLabel: roleLabel(app.role),
+      token: raw,
+    }),
+  );
+  return { ok: true as const, emailSent: mail.sent, emailReason: mail.reason };
+}
+
+export async function sendUpdatedNotice(applicationId: number) {
+  const app = await prisma.staffApplication.findUnique({ where: { id: applicationId } });
+  if (!app || !isPreV2(app.privacyPolicyVersion)) {
+    return { ok: false as const, error: "Questa candidatura non è precedente alla versione 2.0" };
+  }
+  const raw = newToken();
+  const now = new Date();
+  await prisma.$transaction([
+    prisma.staffToken.updateMany({
+      where: { applicationId, purpose: "reinform", usedAt: null },
+      data: { usedAt: now },
+    }),
+    prisma.staffToken.create({
+      data: {
+        applicationId,
+        purpose: "reinform",
+        actor: "candidate",
+        tokenHash: hashToken(raw),
+        expiresAt: addDays(now, TOKEN_TTL_DAYS),
+      },
+    }),
+  ]);
+  const mail = await safeMail(() =>
+    mailReinform({
+      applicationId,
+      to: app.email,
+      firstName: app.firstName,
+      token: raw,
+    }),
+  );
+  return { ok: true as const, emailSent: mail.sent, emailReason: mail.reason };
+}
+
+export async function readRenewalPage(raw: string) {
+  const loaded = await loadToken(raw, "reinform");
+  if (!loaded.ok) return loaded;
+  const app = loaded.token.application;
+  return {
+    ok: true as const,
+    page: {
+      firstName: app.firstName,
+      roleLabel: roleLabel(app.role),
+      mediaRole: isMediaRole(app.role),
+    },
+  };
+}
+
+export async function completeLegacyRenewal(
+  raw: string,
+  input: { privacyRead: boolean; media: Record<MediaKey, boolean>; rightsAssignment: boolean },
+  meta: RequestMeta,
+) {
+  const loaded = await loadToken(raw, "reinform");
+  if (!loaded.ok) return loaded;
+  if (!input.privacyRead) return { ok: false as const, error: "Conferma di aver letto l'informativa aggiornata" };
+  const app = loaded.token.application;
+  const drafts: ConsentDraft[] = [
+    {
+      key: "privacyRead",
+      value: "true",
+      actor: "candidate",
+      document: "privacy",
+      documentVersion: PRIVACY_VERSION,
+      text: adultPrivacyReadText,
+    },
+    {
+      key: "legacyRenewal",
+      value: "true",
+      actor: "candidate",
+      document: "privacy",
+      documentVersion: PRIVACY_VERSION,
+      text: "Ho preso visione dell'informativa aggiornata e ho rinnovato le scelte.",
+    },
+  ];
+  for (const key of MEDIA_KEYS) {
+    drafts.push({
+      key,
+      value: boolValue(input.media[key]),
+      actor: "candidate",
+      document: "social",
+      documentVersion: SOCIAL_VERSION,
+      text: ADULT_MEDIA_TEXT[key],
+    });
+  }
+  if (isMediaRole(app.role)) {
+    drafts.push({
+      key: "rightsAssignment",
+      value: boolValue(input.rightsAssignment),
+      actor: "candidate",
+      document: "termini",
+      documentVersion: TERMS_VERSION,
+      text: adultRightsText,
+    });
+  }
+  await prisma.$transaction([
+    prisma.staffConsent.createMany({
+      data: draftsToRows(drafts, meta).map((row) => ({ ...row, applicationId: app.id })),
+    }),
+    prisma.staffToken.update({
+      where: { id: loaded.token.id },
+      data: { usedAt: new Date() },
+    }),
+  ]);
+  return { ok: true as const };
 }

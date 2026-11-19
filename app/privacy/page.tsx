@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Informativa privacy — Candidatura staff | Leonessa Cup",
   description:
     "Informativa sul trattamento dei dati personali per la candidatura staff della Leonessa Cup.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Informativa per staff minorenni e genitori | Leonessa Cup",
   description:
     "Informativa sul trattamento dei dati dei candidati staff di 16 e 17 anni e dei loro genitori.",
+  alternates: { canonical: "/privacy/minori" },
 };
 
 export default function MinoriPage() {

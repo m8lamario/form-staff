@@ -1,6 +1,6 @@
-import { PolicyTodo } from "@/components/PolicyTodo";
+import { LegalReviewNote, PolicyTodo } from "@/components/PolicyTodo";
 import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
-import { CONTROLLER, POLICY_PATHS, TERMS_VERSION } from "@/lib/legal";
+import { CONTROLLER, LEGAL, POLICY_PATHS, TERMS_VERSION } from "@/lib/legal";
 import Link from "next/link";
 
 const linkClass = "text-mint underline underline-offset-2";
@@ -12,9 +12,13 @@ export function TerminiDocument() {
       <p>
         Condizioni della candidatura staff volontario, regole di condotta e
         diritti sui contenuti — Leonessa Cup. Stagione 2026/2027 — versione{" "}
-        {TERMS_VERSION}.
+        {TERMS_VERSION}. Le versioni precedenti restano consultabili:{" "}
+        <Link href={POLICY_PATHS.terminiArchive} className={linkClass}>
+          condizioni 1.0
+        </Link>
+        .
       </p>
-      <PolicyTodo block>DA VALIDARE LEGALMENTE.</PolicyTodo>
+      <LegalReviewNote block>DA VALIDARE LEGALMENTE.</LegalReviewNote>
 
       <section>
         <LegalHeading>1. Organizzazione</LegalHeading>
@@ -64,28 +68,32 @@ export function TerminiDocument() {
           gratuito, senza fine di lucro, anche indiretto. Non è dovuto alcun
           compenso, in nessuna forma. Queste condizioni non costituiscono un
           contratto di lavoro subordinato o autonomo né una collaborazione
-          retribuita. Rimborso spese:{" "}
-          <PolicyTodo>
-            DA DECIDERE: «non previsto» oppure «sono rimborsate solo le spese
-            effettivamente sostenute e documentate, preventivamente autorizzate
-            da ESL, entro [importo] e secondo [modalità]».
-          </PolicyTodo>{" "}
-          Non sono ammessi rimborsi forfettari. ESL può fornire materiali dello
-          staff (es. maglietta, accredito, pasto durante i turni) per lo
-          svolgimento dell&apos;attività, senza che costituiscano compenso.
+          retribuita. <strong>Non è previsto alcun rimborso spese</strong>, né
+          forfettario né a piè di lista: le spese sostenute per partecipare (ad
+          esempio viaggio e vitto) restano a carico del volontario. ESL può
+          fornire materiali dello staff (es. maglietta, accredito, pasto durante
+          i turni) per lo svolgimento dell&apos;attività, senza che costituiscano
+          compenso.
         </p>
       </section>
       <section>
         <LegalHeading>5. Assicurazione</LegalHeading>
         <p className="mt-3">
-          <PolicyTodo>
-            DA DECIDERE: «ESL assicura i volontari selezionati per responsabilità
-            civile verso terzi e infortuni durante l&apos;attività, con polizza
-            [compagnia / n. polizza]; le condizioni sono disponibili su
-            richiesta» oppure altra soluzione.
-          </PolicyTodo>{" "}
-          La partecipazione è subordinata all&apos;attivazione della copertura
-          prevista.
+          {LEGAL.volunteering.insurance ? (
+            <>
+              ESL assicura i volontari selezionati per responsabilità civile
+              verso terzi e infortuni durante l&apos;attività, con polizza{" "}
+              {LEGAL.volunteering.insurance}; le condizioni sono disponibili su
+              richiesta.
+            </>
+          ) : (
+            <>
+              ESL comunica ai volontari selezionati, prima dell&apos;inizio
+              dell&apos;attività, le eventuali coperture assicurative attive per
+              lo staff.{" "}
+              <PolicyTodo>[polizza RC e infortuni volontari: DA COMPLETARE]</PolicyTodo>
+            </>
+          )}
         </p>
       </section>
       <section>
@@ -115,8 +123,9 @@ export function TerminiDocument() {
           <li>segnala subito a ESL comportamenti inappropriati.</li>
         </ul>
         <p className="mt-2">
-          Gli staff minorenni svolgono turni compatibili con l&apos;età, sempre
-          con un referente adulto di ESL. Il certificato del casellario
+          Gli staff minorenni svolgono turni di massimo {LEGAL.volunteering.minorMaxShiftHours} ore,
+          compatibili con l&apos;età, sempre con un referente adulto di ESL. Il
+          certificato del casellario
           giudiziale non è richiesto.
         </p>
       </section>
@@ -141,11 +150,7 @@ export function TerminiDocument() {
           territorio, per tutta la durata dei diritti e per qualsiasi mezzo e
           formato, oggi noto o futuro: pubblicazione, riproduzione, comunicazione
           al pubblico anche in diretta, elaborazione, montaggio, traduzione,
-          archiviazione.{" "}
-          <PolicyTodo>
-            DA VALIDARE LEGALMENTE: esclusiva e durata; in alternativa, licenza
-            esclusiva di [N] anni.
-          </PolicyTodo>
+          archiviazione.
         </p>
         <p className="mt-2">
           <strong>8.3 Media partner.</strong> ESL può concedere in sublicenza o
@@ -182,14 +187,8 @@ export function TerminiDocument() {
           unico esercente, con le stesse conferme della liberatoria (G1 e C1), e
           l&apos;accordo del minore. Finché la cessione non è attiva ESL non usa
           i Contenuti del minore e il minore non può essere assegnato ai ruoli
-          Foto, Interviste, Giornale o Social.{" "}
-          <PolicyTodo>
-            DA VALIDARE LEGALMENTE: se la cessione gratuita di diritti
-            patrimoniali del minore rientri nell&apos;ordinaria amministrazione o
-            richieda l&apos;autorizzazione del giudice tutelare (art. 320 c.c.).
-            In alternativa, licenza non esclusiva gratuita limitata agli usi
-            dell&apos;evento.
-          </PolicyTodo>
+          Foto, Interviste, Giornale o Social. La cessione è in esclusiva anche
+          per i minori, con il consenso dei genitori già previsto (G1, C1 e G16).
         </p>
         <p className="mt-2">
           <strong>8.7 Garanzie e uso personale.</strong> L&apos;autore garantisce
@@ -227,7 +226,11 @@ export function TerminiDocument() {
           incassi e rendiconto. Chi ha il ruolo Sicurezza svolge solo supporto
           organizzativo e non sostituisce il personale abilitato (steward,
           addetti antincendio o primo soccorso) quando la legge lo richiede.{" "}
-          <PolicyTodo>DA VERIFICARE con ESL i compiti previsti.</PolicyTodo>
+          {LEGAL.volunteering.securityRoleDuties ? (
+            LEGAL.volunteering.securityRoleDuties
+          ) : (
+            <PolicyTodo>DA VERIFICARE con ESL i compiti previsti.</PolicyTodo>
+          )}
         </p>
       </section>
       <section>

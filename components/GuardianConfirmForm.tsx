@@ -13,7 +13,7 @@ import {
   soleHolderText,
   type MediaKey,
 } from "@/lib/consent-copy";
-import { POLICY_PATHS } from "@/lib/legal";
+import { POLICY_PATHS, TERMS_VERSION } from "@/lib/legal";
 import type { G3Choice } from "@/lib/publication";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
@@ -147,7 +147,7 @@ export function GuardianConfirmForm({ token, page }: { token: string; page: Page
           {guardianPrivacyText} <Doc href={POLICY_PATHS.privacy}>Privacy</Doc> · <Doc href={POLICY_PATHS.minori}>Minori</Doc>
         </Box>
         <Box checked={terms} onChange={setTerms} error={errors.guardianTermsAccepted}>
-          Autorizzo la candidatura di mio/a figlio/a allo staff volontario della Leonessa Cup e accetto per suo conto le <Doc href={POLICY_PATHS.termini}>condizioni (versione 1.0)</Doc>.
+          Autorizzo la candidatura di mio/a figlio/a allo staff volontario della Leonessa Cup e accetto per suo conto le <Doc href={POLICY_PATHS.termini}>condizioni (versione {TERMS_VERSION})</Doc>.
         </Box>
         <fieldset className="rounded-2xl border border-white/15 p-3">
           <legend className="px-1 text-sm text-white">

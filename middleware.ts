@@ -2,7 +2,26 @@ import { COOKIE_NAME, isValidSessionToken } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname === "/admin/login") {
+  const { pathname } = request.nextUrl;
+  if (
+    pathname.startsWith("/genitore") ||
+    pathname.startsWith("/revoca") ||
+    pathname.startsWith("/rinnovo")
+  ) {
+    const response = NextResponse.next();
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    response.headers.set("Cache-Control", "no-store");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    return response;
+  }
+
+  if (pathname === "/grazie") {
+    const response = NextResponse.next();
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return response;
+  }
+
+  if (pathname === "/admin/login") {
     return NextResponse.next();
   }
 
@@ -18,5 +37,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/genitore/:path*", "/revoca/:path*", "/rinnovo/:path*", "/grazie"],
 };

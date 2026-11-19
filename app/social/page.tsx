@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Liberatoria foto, video e social — Staff | Leonessa Cup",
   description:
     "Liberatoria per foto, video e social dello staff della Leonessa Cup, con sezioni per maggiorenni e minorenni.",
+  alternates: { canonical: "/social" },
 };
 
 export default function SocialPage() {

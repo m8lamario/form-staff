@@ -1,6 +1,8 @@
 import { COOKIE_NAME, isValidSessionToken } from "@/lib/auth";
 import {
+  resendGuardianInvite,
   revokeByAdmin,
+  sendUpdatedNotice,
   setApplicationRole,
   setApplicationStatus,
 } from "@/lib/staff-record";
@@ -49,6 +51,18 @@ export async function POST(request: Request, context: RouteContext) {
     const saved = await setApplicationRole(id, body.role);
     if (!saved.ok) return NextResponse.json({ error: saved.error }, { status: 400 });
     return NextResponse.json({ ok: true });
+  }
+
+  if (body.action === "resend_guardian") {
+    const saved = await resendGuardianInvite(id);
+    if (!saved.ok) return NextResponse.json({ error: saved.error }, { status: 400 });
+    return NextResponse.json({ ok: true, emailSent: saved.emailSent });
+  }
+
+  if (body.action === "reinform") {
+    const saved = await sendUpdatedNotice(id);
+    if (!saved.ok) return NextResponse.json({ error: saved.error }, { status: 400 });
+    return NextResponse.json({ ok: true, emailSent: saved.emailSent });
   }
 
   if (body.action === "revoke") {

@@ -14,7 +14,10 @@ async function loadApplications() {
     await purgeUnconfirmedSecondGuardians();
     const applications = await prisma.staffApplication.findMany({
       orderBy: { createdAt: "desc" },
-      include: { consents: true },
+      include: {
+        consents: true,
+        emails: { orderBy: { createdAt: "desc" }, take: 5 },
+      },
     });
     return { applications };
   } catch (error) {

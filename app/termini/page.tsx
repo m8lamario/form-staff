@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Condizioni candidatura staff volontario | Leonessa Cup",
   description:
     "Condizioni della candidatura staff volontario, regole di condotta e diritti sui contenuti.",
+  alternates: { canonical: "/termini" },
 };
 
 export default function TerminiPage() {

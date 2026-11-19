@@ -1,3 +1,5 @@
+import { applicationsOpen } from "@/lib/legal";
+import { allowRequest } from "@/lib/rate-limit";
 import { createStaffApplication } from "@/lib/staff-record";
 import { validateStaffPayload } from "@/lib/staff";
 import { requestMeta } from "@/lib/tokens";
@@ -7,10 +9,27 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  if (!(await allowRequest("staff-submit", request, 10, 60 * 60 * 1000))) {
+    return NextResponse.json({ error: "Troppe candidature da questa rete. Riprova più tardi." }, { status: 429 });
+  }
+
   let body: unknown;
   try {
     body = await request.json();
   } catch {
+    return NextResponse.json({ error: "Richiesta non valida" }, { status: 400 });
+  }
+
+  if (!applicationsOpen()) {
+    return NextResponse.json({ error: "Candidature chiuse" }, { status: 409 });
+  }
+
+  const record = typeof body === "object" && body !== null ? (body as Record<string, unknown>) : null;
+  if (!record || (typeof record.website === "string" && record.website.trim() !== "")) {
+    return NextResponse.json({ error: "Richiesta non valida" }, { status: 400 });
+  }
+  const startedAt = record.formStartedAt;
+  if (typeof startedAt !== "number" || Date.now() - startedAt < 2000) {
     return NextResponse.json({ error: "Richiesta non valida" }, { status: 400 });
   }
 

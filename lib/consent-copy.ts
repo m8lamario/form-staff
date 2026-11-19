@@ -56,7 +56,7 @@ export const adultPrivacyReadText = `Ho letto l'informativa privacy (versione ${
 export const adultTermsText = `Accetto le condizioni della candidatura staff volontario e le regole di condotta (versione ${TERMS_VERSION}).`;
 
 export const adultRightsText =
-  "Cedo a ESL, a titolo gratuito, i diritti di utilizzazione economica sui contenuti che realizzerò come staff, con facoltà di sublicenza ai media partner di ESL, nei termini dell'art. 8 delle condizioni. I miei diritti morali di autore restano salvi.";
+  "Cedo a ESL, a titolo gratuito e in esclusiva, i diritti di utilizzazione economica sui contenuti che realizzerò come staff, con facoltà di sublicenza ai media partner di ESL, nei termini dell'art. 8 delle condizioni. I miei diritti morali di autore restano salvi.";
 
 export const commsFutureText =
   "Acconsento a ricevere da ESL, via email e messaggi, comunicazioni su candidature staff, eventi e tornei delle edizioni successive.";
@@ -86,7 +86,7 @@ export const fullSurnameText =
   "Autorizzo l'indicazione del cognome completo nelle didascalie.";
 
 export const guardianRightsText =
-  "Per conto di mio/a figlio/a cedo a ESL, a titolo gratuito, i diritti di utilizzazione economica sui contenuti che realizzerà come staff, con facoltà di sublicenza ai media partner di ESL, nei termini dell'art. 8 delle condizioni. I diritti morali restano salvi.";
+  "Per conto di mio/a figlio/a cedo a ESL, a titolo gratuito e in esclusiva, i diritti di utilizzazione economica sui contenuti che realizzerà come staff, con facoltà di sublicenza ai media partner di ESL, nei termini dell'art. 8 delle condizioni. I diritti morali restano salvi.";
 
 export const c1ConfirmText = "Confermo le scelte sopra indicate";
 

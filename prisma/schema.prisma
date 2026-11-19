@@ -56,6 +56,13 @@ enum TokenPurpose {
   guardian1
   guardian2
   revoke
+  reinform
+}
+
+enum OutboxStatus {
+  queued
+  sent
+  error
 }
 
 model StaffApplication {
@@ -89,6 +96,7 @@ model StaffApplication {
   updatedAt            DateTime  @updatedAt
   consents             StaffConsent[]
   tokens               StaffToken[]
+  emails               EmailOutbox[]
 
   @@index([role])
   @@index([createdAt])
@@ -127,9 +135,41 @@ model StaffToken {
   expiresAt      DateTime         @map("expires_at")
   usedAt         DateTime?        @map("used_at")
   reminderSentAt DateTime?        @map("reminder_sent_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
   application    StaffApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@index([applicationId])
   @@index([purpose])
   @@map("staff_tokens")
+}
+
+model EmailOutbox {
+  id            Int              @id @default(autoincrement())
+  applicationId Int?             @map("application_id")
+  kind          String
+  toEmail       String           @map("to_email")
+  subject       String
+  html          String
+  textBody      String           @map("text_body")
+  status        OutboxStatus     @default(queued)
+  attempts      Int              @default(0)
+  nextAttemptAt DateTime         @default(now()) @map("next_attempt_at")
+  lastError     String?          @map("last_error")
+  sentAt        DateTime?        @map("sent_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  application   StaffApplication? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([applicationId])
+  @@map("email_outbox")
+}
+
+model RateLimitHit {
+  id        Int      @id @default(autoincrement())
+  bucket    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([bucket, createdAt])
+  @@map("rate_limit_hits")
 }

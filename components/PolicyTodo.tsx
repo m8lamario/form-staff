@@ -1,4 +1,16 @@
+import { legalReviewDone } from "@/lib/legal";
 import type { ReactNode } from "react";
+
+export function LegalReviewNote({
+  children,
+  block = false,
+}: {
+  children: ReactNode;
+  block?: boolean;
+}) {
+  if (legalReviewDone()) return null;
+  return <PolicyTodo block={block}>{children}</PolicyTodo>;
+}
 
 export function PolicyTodo({
   children,

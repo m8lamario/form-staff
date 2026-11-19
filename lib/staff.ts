@@ -129,7 +129,7 @@ export function stepsFor(ageBand: AgeResult | null): FormStep[] {
     {
       id: "experience",
       title: "Esperienza",
-      description: "Hai già fatto parte dello staff?",
+      description: "Edizione precedente",
       fields: ["participatedLastYear"],
     },
     {

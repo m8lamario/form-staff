@@ -44,6 +44,8 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
   const [roleFilter, setRoleFilter] = useState<"ALL" | StaffRoleId>("ALL");
   const [mediaFilter, setMediaFilter] = useState<"ALL" | "YES" | "NO">("ALL");
   const [openId, setOpenId] = useState<number | null>(null);
+  const [legacyOnly, setLegacyOnly] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState("");
 
   const distribution = useMemo(
     () => roleDistribution(applications),
@@ -53,9 +55,14 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
   const mediaCount = applications.filter((item) => hasMediaConsent(item)).length;
   const topRole = [...distribution].sort((a, b) => b.count - a.count)[0];
 
+  const preV2 = applications.filter((item) => item.legacy);
+  const reinformedCount = preV2.filter((item) => item.reinformed).length;
+  const renewedCount = preV2.filter((item) => item.renewed).length;
+
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return applications.filter((item) => {
+      if (legacyOnly && !item.legacy) return false;
       const matchesRole = roleFilter === "ALL" || item.role === roleFilter;
       const matchesMedia =
         mediaFilter === "ALL" ||
@@ -64,10 +71,46 @@ export function AdminDashboard({ applications }: AdminDashboardProps) {
       const haystack = `${item.firstName} ${item.lastName} ${item.email} ${item.phone}`.toLowerCase();
       return matchesRole && matchesMedia && (!needle || haystack.includes(needle));
     });
-  }, [applications, query, roleFilter, mediaFilter]);
+  }, [applications, query, roleFilter, mediaFilter, legacyOnly]);
+
+  async function sendUpdatedNotices() {
+    const ids = filtered.filter((item) => item.legacy).map((item) => item.id);
+    setBulkMessage("");
+    if (ids.length === 0) {
+      setBulkMessage("Nessuna candidatura pre-v2.0 nel filtro attuale.");
+      return;
+    }
+    const response = await fetch("/api/admin/reinform", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    });
+    const payload = (await response.json()) as { sent?: number; error?: string };
+    if (!response.ok) {
+      setBulkMessage(payload.error ?? "Invio non riuscito.");
+      return;
+    }
+    setBulkMessage(`Email accodate e inviate: ${payload.sent ?? 0} su ${ids.length}.`);
+    router.refresh();
+  }
 
   return (
     <div className="space-y-8">
+      <section className="rounded-3xl border border-white/15 bg-white/5 p-5 text-sm text-white/80">
+        <p>
+          Candidature pre-v2.0: {preV2.length}. Reinformate: {reinformedCount}. Scelte rinnovate: {renewedCount}.
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <label className="inline-flex items-center gap-2">
+            <input type="checkbox" checked={legacyOnly} onChange={(event) => setLegacyOnly(event.target.checked)} />
+            Candidature pre-v2.0
+          </label>
+          <button type="button" onClick={sendUpdatedNotices} className="rounded-2xl bg-mint px-3 py-2 font-semibold text-navy">
+            Invia informativa aggiornata
+          </button>
+        </div>
+        {bulkMessage ? <p className="mt-2">{bulkMessage}</p> : null}
+      </section>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard label="Totale risposte" value={applications.length} />
         <StatCard label="Già staff l'anno scorso" value={returningCount} />
@@ -293,6 +336,9 @@ function StatusCell({ item }: { item: ApplicationDTO }) {
       {item.pendingOtherGuardian ? <Chip>In attesa dell&apos;altro genitore</Chip> : null}
       {item.legacyMediaLabel ? <Chip>{item.legacyMediaLabel}</Chip> : null}
       {item.legacy ? <Chip>Testi {item.policyVersion}</Chip> : null}
+      {item.reinformed ? <Chip>Reinformata</Chip> : null}
+      {item.renewed ? <Chip>Scelte rinnovate</Chip> : null}
+      {item.lastEmail ? <Chip>Email {emailStatusLabel(item.lastEmail.status)}</Chip> : null}
       {!item.legacy
         ? flagEntries(item.flags).map((flag) => (
             <Chip key={flag.key}>
@@ -311,6 +357,13 @@ function Chip({ children }: { children: React.ReactNode }) {
       {children}
     </span>
   );
+}
+
+function emailStatusLabel(status: string) {
+  if (status === "queued") return "in coda";
+  if (status === "sent") return "inviata";
+  if (status === "error") return "errore";
+  return status;
 }
 
 function statusLabel(status: string) {
@@ -356,11 +409,22 @@ function ApplicationEditor({ item, onDone }: { item: ApplicationDTO; onDone: () 
       {item.guardianName ? <p>Genitore di contatto: {item.guardianName}, {item.guardianEmail}, {item.guardianPhone}.</p> : null}
       {item.secondGuardianName ? <p>Altro genitore: {item.secondGuardianName}, {item.secondGuardianEmail}.</p> : null}
       {item.legacyRightsNote ? <p>{item.legacyRightsNote}</p> : null}
+      {item.lastEmail ? (
+        <p>
+          Ultimo invio ({item.lastEmail.kind}): {emailStatusLabel(item.lastEmail.status)}
+          {item.lastEmail.error ? ` — ${item.lastEmail.error}` : ""}.
+        </p>
+      ) : null}
       {item.blockers.map((blocker) => (
         <p key={blocker} className="text-mint">{blocker}</p>
       ))}
       {item.legacy ? (
-        <p>Candidatura precedente: resta legata ai testi già accettati e non si modifica da qui.</p>
+        <div className="space-y-2">
+          <p>Candidatura precedente: resta legata ai testi già accettati e non si modifica da qui.</p>
+          <button type="button" disabled={pending} onClick={() => send({ action: "reinform" })} className="rounded-2xl border border-white/20 px-3 py-2">
+            Invia informativa aggiornata
+          </button>
+        </div>
       ) : (
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
           <label className="block">
@@ -374,6 +438,11 @@ function ApplicationEditor({ item, onDone }: { item: ApplicationDTO; onDone: () 
           <button type="button" disabled={pending} onClick={() => send({ action: "role", role })} className="rounded-2xl border border-white/20 px-3 py-2">Salva ruolo</button>
           <button type="button" disabled={pending || item.blockers.length > 0} onClick={() => send({ action: "accept" })} className="rounded-2xl bg-mint px-3 py-2 font-semibold text-navy disabled:opacity-50">Accetta</button>
           <button type="button" disabled={pending} onClick={() => send({ action: "reject" })} className="rounded-2xl border border-white/20 px-3 py-2">Non accogliere</button>
+          {item.pendingGuardian ? (
+            <button type="button" disabled={pending} onClick={() => send({ action: "resend_guardian" })} className="rounded-2xl border border-white/20 px-3 py-2">
+              Reinvia email al genitore
+            </button>
+          ) : null}
         </div>
       )}
       {!item.legacy ? (

@@ -1,6 +1,6 @@
 import { PolicyTodo } from "@/components/PolicyTodo";
 import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
-import { CONTROLLER, EVENT_PLACEHOLDERS, POLICY_PATHS, SOCIAL_VERSION } from "@/lib/legal";
+import { CONTROLLER, LEGAL, POLICY_PATHS, SOCIAL_VERSION } from "@/lib/legal";
 import Link from "next/link";
 
 const linkClass = "text-mint underline underline-offset-2";
@@ -11,7 +11,11 @@ export function SocialV2Document() {
       <PlaceholderNotice />
       <p>
         Liberatoria foto, video e social — staff Leonessa Cup, versione{" "}
-        {SOCIAL_VERSION}. La versione precedente resta consultabile:{" "}
+        {SOCIAL_VERSION}. Le versioni precedenti restano consultabili:{" "}
+        <Link href={POLICY_PATHS.socialV20} className={linkClass}>
+          liberatoria 2.0
+        </Link>
+        {" e "}
         <Link href={POLICY_PATHS.socialArchive} className={linkClass}>
           liberatoria 1.0
         </Link>
@@ -76,9 +80,8 @@ export function SocialV2Document() {
             <strong>Durata e revoca.</strong> L&apos;autorizzazione vale fino a
             revoca e comunque per non oltre 10 anni dalla fine della stagione.
             Puoi revocarla in qualsiasi momento, anche per un solo uso, scrivendo
-            a {CONTROLLER.privacyEmail}{" "}
-            <PolicyTodo>o dal link di revoca, quando l&apos;email è attiva</PolicyTodo>
-            . Dopo la revoca o la scadenza ESL non pubblica nuovi contenuti con
+            a {CONTROLLER.privacyEmail} o dal link di revoca. Dopo la revoca o la
+            scadenza ESL non pubblica nuovi contenuti con
             le tue Immagini e rimuove entro 30 giorni, quando tecnicamente
             possibile, quelli sui propri canali. Non possono essere ritirati il
             materiale già stampato o consegnato a terzi prima della revoca, gli
@@ -160,9 +163,8 @@ export function SocialV2Document() {
             <strong>Durata e revoca.</strong> L&apos;autorizzazione vale fino a
             revoca e per non oltre 10 anni dalla fine della stagione. Basta la
             revoca di uno solo dei genitori o, dopo i 18 anni, del/della
-            partecipante, scrivendo a {CONTROLLER.privacyEmail}{" "}
-            <PolicyTodo>o dal link di revoca, quando l&apos;email è attiva</PolicyTodo>
-            , anche per un solo uso. Per il resto vale quanto previsto al punto
+            partecipante, scrivendo a {CONTROLLER.privacyEmail} o dal link di
+            revoca, anche per un solo uso. Per il resto vale quanto previsto al punto
             5 della Sezione A.
           </li>
           <li>
@@ -197,7 +199,12 @@ export function SocialV2Document() {
             @leonessacup
           </a>
           ; sito {CONTROLLER.website};{" "}
-          <PolicyTodo>{EVENT_PLACEHOLDERS.otherChannels}</PolicyTodo>. Accordo di
+          {LEGAL.channels.extra && LEGAL.channels.extra.length > 0 ? (
+            LEGAL.channels.extra.join(", ")
+          ) : (
+            <PolicyTodo>[altri canali ufficiali: DA COMPLETARE]</PolicyTodo>
+          )}
+          . Accordo di
           contitolarità social: non previsto.
         </p>
       </section>

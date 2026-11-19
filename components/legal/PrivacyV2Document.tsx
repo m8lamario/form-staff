@@ -1,6 +1,6 @@
 import { PolicyTodo } from "@/components/PolicyTodo";
 import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
-import { CONTROLLER, EVENT_PLACEHOLDERS, POLICY_PATHS, PRIVACY_VERSION } from "@/lib/legal";
+import { CONTROLLER, POLICY_PATHS, PRIVACY_VERSION, SITE_FACTS, eventLegalWhere } from "@/lib/legal";
 import Link from "next/link";
 
 const linkClass = "text-mint underline underline-offset-2";
@@ -29,6 +29,10 @@ export function PrivacyV2Document() {
           condizioni
         </Link>
         . Le versioni precedenti restano consultabili:{" "}
+        <Link href={POLICY_PATHS.privacyV20} className={linkClass}>
+          privacy 2.0
+        </Link>
+        {" e "}
         <Link href={POLICY_PATHS.privacyArchive} className={linkClass}>
           privacy 1.1
         </Link>
@@ -50,11 +54,7 @@ export function PrivacyV2Document() {
         <LegalHeading>2. Dati trattati e fonte</LegalHeading>
         <p className="mt-3">
           I dati sono raccolti con il form di candidatura staff su{" "}
-          {CONTROLLER.formUrl}, per la Leonessa Cup{" "}
-          <PolicyTodo>{EVENT_PLACEHOLDERS.edition}</PolicyTodo>, che si svolge a{" "}
-          <PolicyTodo>{EVENT_PLACEHOLDERS.place}</PolicyTodo> dal{" "}
-          <PolicyTodo>{EVENT_PLACEHOLDERS.start}</PolicyTodo> al{" "}
-          <PolicyTodo>{EVENT_PLACEHOLDERS.end}</PolicyTodo>.
+          {CONTROLLER.formUrl}, {eventLegalWhere()}.
         </p>
         <ul className="mt-3 list-disc space-y-1 pl-5">
           <li>
@@ -86,9 +86,8 @@ export function PrivacyV2Document() {
             non è conservato in chiaro.
           </li>
           <li>
-            Se entri nello staff: turni, accrediti, ruolo assegnato, eventuali
-            rimborsi spese, foto e video nei limiti della liberatoria, e i
-            contenuti che produci nel tuo ruolo.
+            Se entri nello staff: turni, accrediti, ruolo assegnato, foto e video
+            nei limiti della liberatoria, e i contenuti che produci nel tuo ruolo.
           </li>
         </ul>
         <p className="mt-3">
@@ -127,8 +126,8 @@ export function PrivacyV2Document() {
               </tr>
               <tr className="border-b border-white/10 align-top">
                 <td className="py-2 pr-3">
-                  B. Adempimenti amministrativi e assicurativi (es. copertura dei
-                  volontari, rimborsi spese).
+                  B. Adempimenti amministrativi e assicurativi relativi all&apos;attività
+                  dei volontari.
                 </td>
                 <td className="py-2 pr-3">Obbligo di legge (art. 6.1.c GDPR)</td>
                 <td className="py-2">Necessaria se entri nello staff</td>
@@ -212,11 +211,9 @@ export function PrivacyV2Document() {
           trattamenti automatizzati. Le candidature si consultano solo dal
           pannello admin, protetto da password e da un cookie di sessione
           httpOnly firmato. I link per i genitori sono monouso e il token è
-          conservato solo come hash SHA-256.{" "}
-          <PolicyTodo>
-            DA VERIFICARE: non risulta una cifratura aggiuntiva del database o
-            dei campi anagrafici.
-          </PolicyTodo>
+          conservato solo come hash SHA-256. Il database è {SITE_FACTS.database}:
+          le connessioni usano TLS e Neon cifra i dati a riposo. Non c&apos;è
+          una cifratura aggiuntiva dei singoli campi anagrafici.
         </p>
       </section>
 
@@ -225,15 +222,15 @@ export function PrivacyV2Document() {
         <ul className="mt-3 list-disc space-y-1 pl-5">
           <li>Staff organizzativo ESL autorizzato e organizzatori locali della Leonessa Cup.</li>
           <li>
-            Fornitori nominati responsabili del trattamento (art. 28 GDPR):
-            hosting Vercel Inc. <PolicyTodo>{EVENT_PLACEHOLDERS.vercelRegion}</PolicyTodo>,
-            database {EVENT_PLACEHOLDERS.database},{" "}
-            <PolicyTodo>{EVENT_PLACEHOLDERS.email}</PolicyTodo>. Nel repository
-            non c&apos;è un servizio email configurato.{" "}
-            <PolicyTodo>
-              DA VERIFICARE: nomina a responsabile ex art. 28 GDPR e clausole
-              di trasferimento per Vercel e Neon.
-            </PolicyTodo>
+            Fornitori: hosting Vercel Inc.{" "}
+            {SITE_FACTS.vercelRegion ? (
+              SITE_FACTS.vercelRegion
+            ) : (
+              <PolicyTodo>[regione Vercel: DA VERIFICARE]</PolicyTodo>
+            )}
+            , database {SITE_FACTS.database}, {SITE_FACTS.emailProviderLabel}. Nel
+            progetto non risulta una nomina formale a responsabile del trattamento
+            (art. 28 GDPR) per Vercel, Neon e Google.
           </li>
           <li>Compagnie assicurative, consulenti e autorità, quando la legge lo richiede.</li>
           <li>
@@ -251,9 +248,9 @@ export function PrivacyV2Document() {
       <section>
         <LegalHeading>6. Trasferimenti extra-UE</LegalHeading>
         <p className="mt-3">
-          Vercel <PolicyTodo>e gli altri fornitori USA individuati</PolicyTodo>{" "}
-          possono comportare trasferimenti verso gli Stati Uniti, con clausole
-          contrattuali standard e/o EU-U.S. Data Privacy Framework.
+          Vercel Inc. e Google LLC possono comportare trasferimenti verso gli
+          Stati Uniti, con EU-U.S. Data Privacy Framework e/o clausole
+          contrattuali standard. Il database Neon resta in AWS eu-central-1.
         </p>
       </section>
 
@@ -271,9 +268,7 @@ export function PrivacyV2Document() {
               <tr className="border-b border-white/10 align-top">
                 <td className="py-2 pr-3">Candidature non accolte o non confermate dai genitori (A)</td>
                 <td className="py-2">
-                  <PolicyTodo>
-                    12 mesi dalla fine dell&apos;edizione — DA VALIDARE LEGALMENTE
-                  </PolicyTodo>
+                  <strong>12 mesi</strong> dalla fine dell&apos;edizione
                 </td>
               </tr>
               <tr className="border-b border-white/10">
@@ -281,7 +276,7 @@ export function PrivacyV2Document() {
                 <td className="py-2">24 mesi dal termine della stagione</td>
               </tr>
               <tr className="border-b border-white/10">
-                <td className="py-2 pr-3">Documenti amministrativi, assicurativi e rimborsi (B)</td>
+                <td className="py-2 pr-3">Documenti amministrativi e assicurativi (B)</td>
                 <td className="py-2">Per il tempo previsto dalla legge (fino a 10 anni, art. 2220 c.c.)</td>
               </tr>
               <tr className="border-b border-white/10">
@@ -321,12 +316,9 @@ export function PrivacyV2Document() {
           Puoi chiedere accesso, rettifica, cancellazione, limitazione e
           portabilità e opporti al trattamento (artt. 15–22 GDPR), scrivendo a{" "}
           {CONTROLLER.privacyEmail} o alla PEC {CONTROLLER.pec}. Puoi revocare
-          ogni consenso in qualsiasi momento{" "}
-          <PolicyTodo>
-            anche dal link di revoca nell&apos;email di conferma: il link è
-            predisposto, ma l&apos;invio email non è attivo
-          </PolicyTodo>
-          . La revoca non rende illecito il trattamento precedente (art. 7.3
+          ogni consenso in qualsiasi momento, anche dal link di revoca
+          nell&apos;email di conferma. La revoca non rende illecito il
+          trattamento precedente (art. 7.3
           GDPR). Per i minorenni basta la revoca di uno solo dei genitori,
           oppure del minore stesso quando compie 18 anni. Rispondiamo entro un
           mese, prorogabile di due mesi nei casi complessi (art. 12.3 GDPR).

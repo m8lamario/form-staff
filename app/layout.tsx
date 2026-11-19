@@ -1,3 +1,4 @@
+import { LEGAL } from "@/lib/legal";
 import type { Metadata } from "next";
 import { Barlow_Condensed, Outfit } from "next/font/google";
 import "./globals.css";
@@ -13,25 +14,26 @@ const barlow = Barlow_Condensed({
   variable: "--font-barlow",
 });
 
+const description =
+  "Form di candidatura per lo staff volontario della Leonessa Cup 2027 a Brescia, Centro Sportivo Mario Rigamonti.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.leonessacup.app"),
   title: "Leonessa Cup | Candidatura staff",
-  description:
-    "Form di candidatura per lo staff della Leonessa Cup: lascia i tuoi dati e il ruolo che preferisci.",
-  icons: {
-    icon: [
-      {
-        url: "/favicon-light.png",
-        type: "image/png",
-        sizes: "192x192",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/favicon-dark.png",
-        type: "image/png",
-        sizes: "192x192",
-        media: "(prefers-color-scheme: dark)",
-      },
-    ],
+  description,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Leonessa Cup | Candidatura staff",
+    description,
+    locale: "it_IT",
+    siteName: "Leonessa Cup",
+    type: "website",
+    ...(LEGAL.ogImage ? { images: [{ url: LEGAL.ogImage }] } : {}),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Leonessa Cup | Candidatura staff",
+    description,
   },
 };
 
