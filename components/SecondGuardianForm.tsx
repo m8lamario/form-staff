@@ -2,7 +2,7 @@
 
 import { BrandMark } from "@/components/BrandMark";
 import { LegalFooter } from "@/components/legal/LegalChrome";
-import { CONTROLLER, EVENT_PLACEHOLDERS, POLICY_PATHS } from "@/lib/legal";
+import { CONTROLLER, LEGAL, POLICY_PATHS, formatEventDates } from "@/lib/legal";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -61,7 +61,7 @@ export function SecondGuardianForm({
         {message ? <p className="mt-4 text-white">{message}</p> : (
           <>
             <p className="mt-4">
-              Gentile genitore, {firstGuardianName} ha autorizzato la candidatura di {minorName} (nata/o il {birthDate}) allo staff volontario della Leonessa Cup <span className="text-mint">{EVENT_PLACEHOLDERS.edition}</span>, a <span className="text-mint">{EVENT_PLACEHOLDERS.place}</span>, dal <span className="text-mint">{EVENT_PLACEHOLDERS.start}</span> al <span className="text-mint">{EVENT_PLACEHOLDERS.end}</span>, nel ruolo di {roleLabel}, e ha fatto queste scelte:
+              Gentile genitore, {firstGuardianName} ha autorizzato la candidatura di {minorName} (nata/o il {birthDate}) allo staff volontario della Leonessa Cup {LEGAL.event.edition}, a {LEGAL.event.city}, presso il {LEGAL.event.venue}, {formatEventDates(LEGAL.event, "sentence")}, nel ruolo di {roleLabel}, e ha fatto queste scelte:
             </p>
             <ul className="mt-3 list-disc space-y-1 pl-5">
               {choices.map((choice) => (

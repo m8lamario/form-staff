@@ -16,6 +16,7 @@ export default function SocialV20Page() {
       title="Liberatoria 2.0"
       lede="Testo in vigore dal 18 novembre 2026 fino alla versione 2.1. Non si applica alle nuove candidature."
       versionDate={PREVIOUS_LEGAL_DATE}
+      showDraft={false}
     >
       <SocialV20Document />
     </LegalShell>

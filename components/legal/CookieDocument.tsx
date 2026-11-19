@@ -1,10 +1,9 @@
-import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
+import { LegalHeading } from "@/components/legal/LegalChrome";
 import { CONTROLLER, COOKIE_VERSION } from "@/lib/legal";
 
 export function CookieDocument() {
   return (
     <article className="space-y-8 text-sm leading-7 text-white/85">
-      <PlaceholderNotice />
       <p>
         Informativa cookie — leonessacup.app, versione {COOKIE_VERSION}.
         Titolare: {CONTROLLER.name}, {CONTROLLER.address}, P.IVA/C.F.{" "}

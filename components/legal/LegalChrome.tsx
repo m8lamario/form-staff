@@ -4,7 +4,6 @@ import {
   LEGAL_EFFECTIVE_DATE,
   LEGAL_NAV,
   POLICY_PATHS,
-  hasLegalOpenPoints,
   showLegalDraftBanner,
 } from "@/lib/legal";
 import Link from "next/link";
@@ -14,19 +13,7 @@ export function LegalDraftBanner() {
   if (!showLegalDraftBanner()) return null;
   return (
     <p className="rounded-2xl border border-mint bg-mint/20 px-4 py-3 font-medium text-mint">
-      Bozza DA VALIDARE LEGALMENTE
-    </p>
-  );
-}
-
-export function PlaceholderNotice({ always = false }: { always?: boolean }) {
-  if (!always && !hasLegalOpenPoints()) return null;
-  return (
-    <p className="rounded-2xl border border-mint/40 bg-mint/10 px-4 py-3 text-white">
-      I testi evidenziati in verde vanno sostituiti con i dati reali del
-      Titolare prima della pubblicazione. Questa è una bozza: va fatta
-      revisionare da un legale di fiducia e non sostituisce una consulenza
-      professionale.
+      Bozza visibile solo in sviluppo e in preview.
     </p>
   );
 }
@@ -83,6 +70,7 @@ export function LegalShell({
   children,
   versionDate = LEGAL_EFFECTIVE_DATE,
   archiveNote,
+  showDraft = true,
 }: {
   kicker: string;
   title: string;
@@ -90,6 +78,7 @@ export function LegalShell({
   children: ReactNode;
   versionDate?: string;
   archiveNote?: ReactNode;
+  showDraft?: boolean;
 }) {
   return (
     <main className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-12">
@@ -115,7 +104,7 @@ export function LegalShell({
       </nav>
       <section className="mt-8 rounded-[28px] border border-white/15 bg-white/10 p-6 sm:p-8">
         <div className="space-y-4">
-          <LegalDraftBanner />
+          {showDraft ? <LegalDraftBanner /> : null}
           <p className="text-xs uppercase tracking-[0.28em] text-mint">{kicker}</p>
           <h1 className="font-display text-4xl tracking-widest text-white uppercase">{title}</h1>
           <p className="text-white/75">{lede}</p>

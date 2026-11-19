@@ -1,5 +1,4 @@
-import { LegalReviewNote } from "@/components/PolicyTodo";
-import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
+import { LegalHeading } from "@/components/legal/LegalChrome";
 import { CONTROLLER, LEGAL, POLICY_PATHS, PRIVACY_MINOR_VERSION } from "@/lib/legal";
 import Link from "next/link";
 
@@ -8,18 +7,20 @@ const linkClass = "text-mint underline underline-offset-2";
 export function MinoriDocument() {
   return (
     <article className="space-y-8 text-sm leading-7 text-white/85">
-      <PlaceholderNotice />
       <p>
         Informativa sul trattamento dei dati personali del minore e dei
         genitori — staff Leonessa Cup, ai sensi degli artt. 13 e 14 GDPR.
-        Leonessa Cup, stagione 2026/2027 — versione {PRIVACY_MINOR_VERSION}. La
-        versione precedente resta consultabile:{" "}
+        Leonessa Cup, stagione 2026/2027 — versione {PRIVACY_MINOR_VERSION}. Le
+        versioni precedenti restano consultabili:{" "}
+        <Link href={POLICY_PATHS.minoriV11} className={linkClass}>
+          informativa minori 1.1
+        </Link>
+        {" e "}
         <Link href={POLICY_PATHS.minoriArchive} className={linkClass}>
           informativa minori 1.0
         </Link>
         .
       </p>
-      <LegalReviewNote block>DA VALIDARE LEGALMENTE.</LegalReviewNote>
       <p>
         Gentili genitori, i dati dei ragazzi minorenni meritano una protezione
         specifica (considerando 38 GDPR). Vi chiediamo di leggere questa
@@ -59,8 +60,8 @@ export function MinoriDocument() {
             sono obbligatori. Inserire questi dati non è un&apos;autorizzazione.
           </li>
           <li>
-            Il genitore di contatto riceve un link monouso (/genitore/[token],
-            valido 60 giorni). Da lì dichiara di essere genitore o tutore (G1),
+            Il genitore di contatto riceve via email un link personale monouso,
+            valido 60 giorni. Da lì dichiara di essere genitore o tutore (G1),
             conferma la candidatura e accetta le condizioni, sceglie gli usi di
             foto e video e, se il ruolo è Foto, Interviste, Giornale o Social,
             accetta la cessione dei diritti sui contenuti.
@@ -75,17 +76,15 @@ export function MinoriDocument() {
             entrambi i genitori (art. 337-quater c.c.): l&apos;unico esercente
             deve dichiarare che l&apos;altro genitore è deceduto, decaduto,
             sospeso o non riconosce il figlio, o che c&apos;è un provvedimento
-            che gli attribuisce in via esclusiva anche queste decisioni.{" "}
-            <LegalReviewNote>DA VALIDARE LEGALMENTE</LegalReviewNote>
+            che gli attribuisce in via esclusiva anche queste decisioni.
           </li>
           <li>
             Senza la conferma C1 la candidatura può essere accolta, ma il minore
             non è pubblicabile in modo riconoscibile e non può svolgere i ruoli
-            che richiedono la cessione dei diritti.{" "}
-            <LegalReviewNote>
-              DA VALIDARE LEGALMENTE: se anche la candidatura richieda entrambi i
-              genitori. Oggi, come su LCS, basta il genitore di contatto.
-            </LegalReviewNote>
+            che richiedono la cessione dei diritti. Per la sola candidatura basta
+            la conferma del genitore di contatto. Per foto e video, cognome
+            completo e cessione dei diritti serve anche la conferma
+            dell&apos;altro genitore, salvo unico esercente.
           </li>
         </ol>
       </section>

@@ -4,7 +4,7 @@ import {
   POLICY_PATHS,
   PRIVACY_ORG,
   STAFF_MIN_AGE,
-} from "@/lib/privacy-v1";
+} from "@/components/legal/archive/privacy-v1";
 import Link from "next/link";
 
 export function SocialDocument() {

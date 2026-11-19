@@ -1,6 +1,5 @@
-import { PolicyTodo } from "@/components/PolicyTodo";
-import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
-import { CONTROLLER, LEGAL, POLICY_PATHS, SOCIAL_VERSION } from "@/lib/legal";
+import { LegalHeading } from "@/components/legal/LegalChrome";
+import { CONTROLLER, POLICY_PATHS, SOCIAL_VERSION } from "@/lib/legal";
 import Link from "next/link";
 
 const linkClass = "text-mint underline underline-offset-2";
@@ -8,10 +7,13 @@ const linkClass = "text-mint underline underline-offset-2";
 export function SocialV2Document() {
   return (
     <article className="space-y-8 text-sm leading-7 text-white/85">
-      <PlaceholderNotice />
       <p>
         Liberatoria foto, video e social — staff Leonessa Cup, versione{" "}
         {SOCIAL_VERSION}. Le versioni precedenti restano consultabili:{" "}
+        <Link href={POLICY_PATHS.socialV21} className={linkClass}>
+          liberatoria 2.1
+        </Link>
+        {", "}
         <Link href={POLICY_PATHS.socialV20} className={linkClass}>
           liberatoria 2.0
         </Link>
@@ -198,14 +200,9 @@ export function SocialV2Document() {
           <a href={CONTROLLER.tiktok} className={linkClass} target="_blank" rel="noreferrer">
             @leonessacup
           </a>
-          ; sito {CONTROLLER.website};{" "}
-          {LEGAL.channels.extra && LEGAL.channels.extra.length > 0 ? (
-            LEGAL.channels.extra.join(", ")
-          ) : (
-            <PolicyTodo>[altri canali ufficiali: DA COMPLETARE]</PolicyTodo>
-          )}
-          . Accordo di
-          contitolarità social: non previsto.
+          ; sito {CONTROLLER.website}. Eventuali nuovi canali ufficiali saranno
+          aggiunti a questo elenco con una nuova versione della liberatoria.
+          Accordo di contitolarità social: non previsto.
         </p>
       </section>
     </article>

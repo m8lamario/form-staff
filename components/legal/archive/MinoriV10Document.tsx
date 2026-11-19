@@ -1,5 +1,6 @@
 import { PolicyTodo } from "@/components/PolicyTodo";
-import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
+import { ArchivePlaceholderNotice } from "@/components/legal/archive/ArchivePlaceholderNotice";
+import { LegalHeading } from "@/components/legal/LegalChrome";
 import { CONTROLLER, POLICY_PATHS } from "@/lib/legal";
 import Link from "next/link";
 
@@ -8,7 +9,7 @@ const linkClass = "text-mint underline underline-offset-2";
 export function MinoriV10Document() {
   return (
     <article className="space-y-8 text-sm leading-7 text-white/85">
-      <PlaceholderNotice always />
+      <ArchivePlaceholderNotice />
       <p>
         Informativa sul trattamento dei dati personali del minore e dei
         genitori — staff Leonessa Cup, ai sensi degli artt. 13 e 14 GDPR.

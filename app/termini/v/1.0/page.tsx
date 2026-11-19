@@ -16,6 +16,7 @@ export default function TerminiArchivePage() {
       title="Condizioni 1.0"
       lede="Testo in vigore dal 18 novembre 2026 fino alla versione 1.1. Non si applica alle nuove candidature."
       versionDate={PREVIOUS_LEGAL_DATE}
+      showDraft={false}
     >
       <TerminiV10Document />
     </LegalShell>

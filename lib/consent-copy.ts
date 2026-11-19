@@ -16,7 +16,7 @@ export type MediaKey = (typeof MEDIA_KEYS)[number];
 
 export const ADULT_MEDIA_TEXT: Record<MediaKey, string> = {
   media_channels:
-    "Canali del torneo: sito, app e profili social ufficiali della Leonessa Cup e della Lega (es. Instagram, TikTok, Facebook, YouTube), comprese dirette streaming e highlights.",
+    "Canali del torneo: sito, app e profili social ufficiali della Leonessa Cup e della Lega (Instagram @leonessacup e @lcsrealemutua, TikTok @leonessacup), comprese dirette streaming e highlights.",
   media_promo:
     "Promozione ESL: locandine, brochure, video promozionali e campagne pubblicitarie di ESL, anche sponsorizzate online.",
   media_sponsor:
@@ -28,7 +28,7 @@ export const ADULT_MEDIA_TEXT: Record<MediaKey, string> = {
 
 export const MINOR_MEDIA_TEXT: Record<MediaKey, string> = {
   media_channels:
-    "Canali del torneo: sito, app e profili social ufficiali della Leonessa Cup e della Lega (es. Instagram, TikTok, Facebook, YouTube), comprese dirette streaming e highlights.",
+    "Canali del torneo: sito, app e profili social ufficiali della Leonessa Cup e della Lega (Instagram @leonessacup e @lcsrealemutua, TikTok @leonessacup), comprese dirette streaming e highlights.",
   media_promo:
     "Promozione ESL: locandine, brochure, video promozionali e campagne pubblicitarie di ESL, anche sponsorizzate online.",
   media_sponsor:

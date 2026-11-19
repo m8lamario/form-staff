@@ -2,10 +2,10 @@ export const LEGAL_EFFECTIVE_DATE = "19 novembre 2026";
 export const PREVIOUS_LEGAL_DATE = "18 novembre 2026";
 export const LEGACY_ARCHIVE_DATE = "18 settembre 2026";
 
-export const PRIVACY_VERSION = "2.1";
-export const PRIVACY_MINOR_VERSION = "1.1";
-export const SOCIAL_VERSION = "2.1";
-export const TERMS_VERSION = "1.1";
+export const PRIVACY_VERSION = "2.2";
+export const PRIVACY_MINOR_VERSION = "1.2";
+export const SOCIAL_VERSION = "2.2";
+export const TERMS_VERSION = "1.2";
 export const COOKIE_VERSION = "1.0";
 
 export const ARCHIVED_PRIVACY_VERSION = "1.1";
@@ -77,38 +77,33 @@ export const LEGAL = {
   showEventSection: false,
 };
 
-/** Segnaposto della versione 2.0, usati solo dagli archivi in sola lettura. */
-export const EVENT_PLACEHOLDERS = {
-  edition: "[edizione/anno]",
-  place: "[comune e impianto]",
-  start: "[data inizio]",
-  end: "[data fine]",
-  otherChannels: "[altri canali ufficiali: DA COMPLETARE]",
-  vercelRegion: "[regione: DA VERIFICARE]",
-  database: "PostgreSQL Neon, AWS eu-central-1",
-  email: "[email: DA VERIFICARE]",
-} as const;
-
 export const SITE_FACTS = {
   database: "PostgreSQL Neon, AWS eu-central-1",
-  vercelRegion: null as string | null,
+  vercelRegion:
+    "con funzioni server nella regione di Francoforte (UE) e rete di distribuzione dei contenuti globale",
   emailProviderLabel:
     "servizio email Google (Gmail), fornito da Google Ireland Limited, usato per inviare le email di servizio (conferme dei genitori, promemoria, revoche) dall'indirizzo leonessacup@gmail.com",
+  processorsNote:
+    "I fornitori trattano i dati per conto di ESL come responsabili del trattamento (art. 28 GDPR), sulla base dei rispettivi accordi sul trattamento dei dati.",
 } as const;
 
 export const POLICY_PATHS = {
   privacy: "/privacy",
   privacyArchive: "/privacy/v/1.1",
   privacyV20: "/privacy/v/2.0",
+  privacyV21: "/privacy/v/2.1",
   minori: "/privacy/minori",
   minoriArchive: "/privacy/minori/v/1.0",
+  minoriV11: "/privacy/minori/v/1.1",
   social: "/social",
   socialMinori: "/social#minori",
   socialArchive: "/social/v/1.0",
   socialV20: "/social/v/2.0",
+  socialV21: "/social/v/2.1",
   liberatorie: "/liberatorie",
   termini: "/termini",
   terminiArchive: "/termini/v/1.0",
+  terminiV11: "/termini/v/1.1",
   diritti: "/termini#diritti",
   cookie: "/cookie",
   form: "/",
@@ -190,11 +185,10 @@ export function hasLegalOpenPoints(): boolean {
     LEGAL.volunteering.insurance === null ||
     LEGAL.volunteering.securityRoleDuties === null ||
     LEGAL.channels.extra === null ||
-    SITE_FACTS.vercelRegion === null ||
     !legalReviewDone()
   );
 }
 
 export function showLegalDraftBanner(): boolean {
-  return !legalReviewDone();
+  return process.env.VERCEL_ENV !== "production";
 }

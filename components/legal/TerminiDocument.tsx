@@ -1,5 +1,4 @@
-import { LegalReviewNote, PolicyTodo } from "@/components/PolicyTodo";
-import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
+import { LegalHeading } from "@/components/legal/LegalChrome";
 import { CONTROLLER, LEGAL, POLICY_PATHS, TERMS_VERSION } from "@/lib/legal";
 import Link from "next/link";
 
@@ -8,17 +7,19 @@ const linkClass = "text-mint underline underline-offset-2";
 export function TerminiDocument() {
   return (
     <article className="space-y-8 text-sm leading-7 text-white/85">
-      <PlaceholderNotice />
       <p>
         Condizioni della candidatura staff volontario, regole di condotta e
         diritti sui contenuti — Leonessa Cup. Stagione 2026/2027 — versione{" "}
         {TERMS_VERSION}. Le versioni precedenti restano consultabili:{" "}
+        <Link href={POLICY_PATHS.terminiV11} className={linkClass}>
+          condizioni 1.1
+        </Link>
+        {" e "}
         <Link href={POLICY_PATHS.terminiArchive} className={linkClass}>
           condizioni 1.0
         </Link>
         .
       </p>
-      <LegalReviewNote block>DA VALIDARE LEGALMENTE.</LegalReviewNote>
 
       <section>
         <LegalHeading>1. Organizzazione</LegalHeading>
@@ -90,8 +91,8 @@ export function TerminiDocument() {
             <>
               ESL comunica ai volontari selezionati, prima dell&apos;inizio
               dell&apos;attività, le eventuali coperture assicurative attive per
-              lo staff.{" "}
-              <PolicyTodo>[polizza RC e infortuni volontari: DA COMPLETARE]</PolicyTodo>
+              lo staff e le relative condizioni. Il volontario può chiedere
+              informazioni scrivendo a {CONTROLLER.secretariatEmail}.
             </>
           )}
         </p>
@@ -226,11 +227,8 @@ export function TerminiDocument() {
           incassi e rendiconto. Chi ha il ruolo Sicurezza svolge solo supporto
           organizzativo e non sostituisce il personale abilitato (steward,
           addetti antincendio o primo soccorso) quando la legge lo richiede.{" "}
-          {LEGAL.volunteering.securityRoleDuties ? (
-            LEGAL.volunteering.securityRoleDuties
-          ) : (
-            <PolicyTodo>DA VERIFICARE con ESL i compiti previsti.</PolicyTodo>
-          )}
+          {LEGAL.volunteering.securityRoleDuties ??
+            "I compiti specifici del ruolo Sicurezza (ad esempio controllo degli accrediti agli ingressi, indicazioni al pubblico e presidio delle aree assegnate) sono comunicati dai responsabili ESL prima dell'evento."}
         </p>
       </section>
       <section>

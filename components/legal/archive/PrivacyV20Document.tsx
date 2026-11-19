@@ -1,6 +1,8 @@
 import { PolicyTodo } from "@/components/PolicyTodo";
-import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
-import { CONTROLLER, EVENT_PLACEHOLDERS, POLICY_PATHS } from "@/lib/legal";
+import { ArchivePlaceholderNotice } from "@/components/legal/archive/ArchivePlaceholderNotice";
+import { LegalHeading } from "@/components/legal/LegalChrome";
+import { EVENT_PLACEHOLDERS } from "@/components/legal/archive/placeholders";
+import { CONTROLLER, POLICY_PATHS } from "@/lib/legal";
 import Link from "next/link";
 
 const linkClass = "text-mint underline underline-offset-2";
@@ -8,7 +10,7 @@ const linkClass = "text-mint underline underline-offset-2";
 export function PrivacyV20Document() {
   return (
     <article className="space-y-8 text-sm leading-7 text-white/85">
-      <PlaceholderNotice always />
+      <ArchivePlaceholderNotice />
       <p>
         Informativa sul trattamento dei dati personali — candidatura staff
         Leonessa Cup, ai sensi degli artt. 13 e 14 del Regolamento UE 2016/679

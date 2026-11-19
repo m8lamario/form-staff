@@ -1,5 +1,4 @@
-import { PolicyTodo } from "@/components/PolicyTodo";
-import { LegalHeading, PlaceholderNotice } from "@/components/legal/LegalChrome";
+import { LegalHeading } from "@/components/legal/LegalChrome";
 import { CONTROLLER, POLICY_PATHS, PRIVACY_VERSION, SITE_FACTS, eventLegalWhere } from "@/lib/legal";
 import Link from "next/link";
 
@@ -8,7 +7,6 @@ const linkClass = "text-mint underline underline-offset-2";
 export function PrivacyV2Document() {
   return (
     <article className="space-y-8 text-sm leading-7 text-white/85">
-      <PlaceholderNotice />
       <p>
         Informativa sul trattamento dei dati personali — candidatura staff
         Leonessa Cup, ai sensi degli artt. 13 e 14 del Regolamento UE 2016/679
@@ -29,6 +27,10 @@ export function PrivacyV2Document() {
           condizioni
         </Link>
         . Le versioni precedenti restano consultabili:{" "}
+        <Link href={POLICY_PATHS.privacyV21} className={linkClass}>
+          privacy 2.1
+        </Link>
+        {", "}
         <Link href={POLICY_PATHS.privacyV20} className={linkClass}>
           privacy 2.0
         </Link>
@@ -222,15 +224,8 @@ export function PrivacyV2Document() {
         <ul className="mt-3 list-disc space-y-1 pl-5">
           <li>Staff organizzativo ESL autorizzato e organizzatori locali della Leonessa Cup.</li>
           <li>
-            Fornitori: hosting Vercel Inc.{" "}
-            {SITE_FACTS.vercelRegion ? (
-              SITE_FACTS.vercelRegion
-            ) : (
-              <PolicyTodo>[regione Vercel: DA VERIFICARE]</PolicyTodo>
-            )}
-            , database {SITE_FACTS.database}, {SITE_FACTS.emailProviderLabel}. Nel
-            progetto non risulta una nomina formale a responsabile del trattamento
-            (art. 28 GDPR) per Vercel, Neon e Google.
+            Fornitori: hosting Vercel Inc., {SITE_FACTS.vercelRegion}, database{" "}
+            {SITE_FACTS.database}, {SITE_FACTS.emailProviderLabel}. {SITE_FACTS.processorsNote}
           </li>
           <li>Compagnie assicurative, consulenti e autorità, quando la legge lo richiede.</li>
           <li>
