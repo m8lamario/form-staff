@@ -26,7 +26,7 @@ import {
 } from "@/lib/staff";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 const NOTICE_KEY = "leonessa_staff_notice";
 
@@ -50,8 +50,7 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
   const safeStep = Math.min(step, steps.length - 1);
   const currentStep = steps[safeStep];
   const minor = uiAge === "minor16_17";
-
-  const filled = useMemo(() => validateStaffPayload(form).ok, [form]);
+  const lastStep = safeStep >= steps.length - 1;
 
   useEffect(() => {
     const computed = ageBandFromBirth(form.birthDate, new Date());
@@ -86,19 +85,24 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
       return;
     }
     setErrors({});
+    setSubmitError("");
     setStep((current) => Math.min(current + 1, steps.length - 1));
+  }
+
+  function goToErrorStep(nextErrors: FieldErrors) {
+    const firstError = Object.keys(nextErrors)[0];
+    if (firstError) {
+      setStep(stepForField(firstError, uiAge === "underage" ? null : uiAge));
+    }
+    window.setTimeout(() => focusFirstInvalid(nextErrors), 0);
   }
 
   async function submitApplication() {
     const result = validateStaffPayload(form);
     if (!result.ok) {
       setErrors(result.errors);
-      const firstError = Object.keys(result.errors)[0];
-        if (firstError && !isWideViewport()) {
-        setStep(stepForField(firstError, uiAge === "underage" ? null : uiAge));
-      }
       setSubmitError("Controlla i campi evidenziati.");
-      focusFirstInvalid(result.errors);
+      goToErrorStep(result.errors);
       return;
     }
 
@@ -119,11 +123,7 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
         const nextErrors = payload.errors ?? {};
         setErrors(nextErrors);
         setSubmitError(payload.error ?? "Controlla i campi evidenziati.");
-        focusFirstInvalid(nextErrors);
-        const firstError = Object.keys(nextErrors)[0];
-        if (firstError && !isWideViewport()) {
-          setStep(stepForField(firstError, uiAge === "underage" ? null : uiAge));
-        }
+        goToErrorStep(nextErrors);
         return;
       }
       if (!response.ok) {
@@ -141,23 +141,12 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isWideViewport() && safeStep < steps.length - 1) {
+    if (!lastStep) {
       goNext();
       return;
     }
     await submitApplication();
   }
-
-  const show = (id: (typeof steps)[number]["id"]) => {
-    const index = steps.findIndex((item) => item.id === id);
-    if (index < 0) return "hidden";
-    const mobile = index === safeStep ? "flex flex-col" : "hidden";
-    const desktop =
-      id === "role"
-        ? "lg:flex lg:min-h-0 lg:flex-1 lg:flex-col"
-        : "lg:flex lg:flex-none lg:flex-col";
-    return `${mobile} ${desktop}`;
-  };
 
   if (applicationsClosed) {
     return (
@@ -171,7 +160,7 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
   return (
     <form
       onSubmit={onSubmit}
-      className="flex h-fit max-h-full min-h-0 w-full flex-col overflow-hidden rounded-[28px] border border-white/15 bg-white/10 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-6 lg:h-full lg:max-h-[calc(100dvh-6.5rem)] lg:overflow-hidden lg:px-5 lg:py-3.5 xl:max-h-[calc(100dvh-7rem)] xl:px-8 xl:py-6"
+      className="flex h-fit w-full flex-col rounded-[28px] border border-white/15 bg-white/10 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-6 md:p-8"
       noValidate
     >
       <p className="absolute left-[-9999px] h-px w-px overflow-hidden" aria-hidden="true">
@@ -180,7 +169,7 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
           <input tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} />
         </label>
       </p>
-      <div className="mb-3 shrink-0 lg:hidden">
+      <div className="mb-5 shrink-0">
         <div className="flex gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={steps.length} aria-valuenow={safeStep + 1} aria-label="Avanzamento iscrizione">
           {steps.map((item, index) => (
             <span key={item.id} className={`h-1.5 flex-1 rounded-full ${index <= safeStep ? "bg-mint" : "bg-white/20"}`} />
@@ -189,87 +178,75 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
         <p className="mt-2 text-[11px] uppercase tracking-[0.22em] text-mint">
           Passo {safeStep + 1} di {steps.length} · {currentStep.title}
         </p>
-        <p className="mt-1 text-xs text-white/80 lg:hidden">
+        <p className="mt-1 text-xs text-white/80">
           {eventPlaceLine()} · {formatEventDates()}
         </p>
       </div>
 
       {submitError ? (
-        <p role="alert" className="mb-5 shrink-0 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white">
+        <p role="alert" className="mb-5 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white">
           {submitError}
         </p>
       ) : null}
 
-      <div className="min-h-0 flex-1 overflow-y-auto lg:flex lg:flex-col lg:gap-2.5 lg:overflow-y-auto lg:overscroll-contain">
-        <header className="hidden shrink-0 lg:block">
-          <h1 className="font-display text-[1.5rem] tracking-[0.14em] text-white uppercase xl:text-3xl">
-            Unisciti allo staff
+      <div className="flex flex-col">
+        <header className="mb-4">
+          <h1 className="font-display text-[1.65rem] tracking-[0.12em] text-white uppercase sm:text-3xl">
+            {currentStep.title}
           </h1>
-          <p className="mt-1 text-sm font-medium text-white/90">
-            {eventPlaceLine()} · {formatEventDates()}
-          </p>
-          <p className="mt-1 max-w-xl text-sm leading-5 text-white/70">
-            Volontariato dai 16 anni. Se hai 16 o 17 anni, la candidatura vale dopo la conferma di un genitore.
-          </p>
+          <p className="mt-1 text-sm leading-5 text-white/75">{currentStep.description}</p>
         </header>
 
-        <div className={safeStep <= 1 ? "flex flex-col lg:flex-none" : "hidden lg:flex lg:flex-none lg:flex-col"}>
-          <StepHeading stepId="identity" currentId={currentStep.id} steps={steps} />
-          <StepHeading stepId="contacts" currentId={currentStep.id} steps={steps} />
-          <SectionLabel title="Dati personali" />
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:mt-0 lg:gap-2.5">
-            <div className={safeStep === 0 ? "contents" : "hidden lg:contents"}>
-              <Field id="firstName" label="Nome" value={form.firstName} error={errors.firstName} autoComplete="given-name" onChange={(value) => update("firstName", value)} />
-              <Field id="lastName" label="Cognome" value={form.lastName} error={errors.lastName} autoComplete="family-name" onChange={(value) => update("lastName", value)} />
-              <div className="sm:col-span-2">
-                <Field id="birthDate" label="Data di nascita" type="date" value={form.birthDate} error={errors.birthDate} autoComplete="bday" onChange={(value) => update("birthDate", value)} />
+        {currentStep.id === "identity" ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field id="firstName" label="Nome" value={form.firstName} error={errors.firstName} autoComplete="given-name" onChange={(value) => update("firstName", value)} />
+            <Field id="lastName" label="Cognome" value={form.lastName} error={errors.lastName} autoComplete="family-name" onChange={(value) => update("lastName", value)} />
+            <div className="sm:col-span-2">
+              <Field id="birthDate" label="Data di nascita" type="date" value={form.birthDate} error={errors.birthDate} autoComplete="bday" onChange={(value) => update("birthDate", value)} />
+            </div>
+            <fieldset className="sm:col-span-2" aria-describedby={errors.ageDeclaration ? "ageDeclaration-error" : undefined}>
+              <legend className="mb-2 text-[13px] font-medium text-white/90">Fascia d&apos;età</legend>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {(Object.keys(AGE_DECLARATION_TEXT) as Array<keyof typeof AGE_DECLARATION_TEXT>).map((key, index) => (
+                  <RadioOption
+                    key={key}
+                    id={index === 0 ? "ageDeclaration" : `age-${key}`}
+                    name="ageDeclaration"
+                    checked={form.ageDeclaration === key}
+                    describedBy={errors.ageDeclaration ? "ageDeclaration-error" : undefined}
+                    onChange={() => update("ageDeclaration", key)}
+                  >
+                    {AGE_DECLARATION_TEXT[key]}
+                  </RadioOption>
+                ))}
               </div>
-              <fieldset className="sm:col-span-2" aria-describedby={errors.ageDeclaration ? "ageDeclaration-error" : undefined}>
-                <legend className="mb-2 text-[13px] font-medium text-white/90">Fascia d&apos;età</legend>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {(Object.keys(AGE_DECLARATION_TEXT) as Array<keyof typeof AGE_DECLARATION_TEXT>).map((key, index) => (
-                    <RadioOption
-                      key={key}
-                      id={index === 0 ? "ageDeclaration" : `age-${key}`}
-                      name="ageDeclaration"
-                      checked={form.ageDeclaration === key}
-                      describedBy={errors.ageDeclaration ? "ageDeclaration-error" : undefined}
-                      onChange={() => update("ageDeclaration", key)}
-                    >
-                      {AGE_DECLARATION_TEXT[key]}
-                    </RadioOption>
-                  ))}
-                </div>
-                {errors.ageDeclaration ? <p id="ageDeclaration-error" className="mt-2 text-sm text-mint">{errors.ageDeclaration}</p> : null}
-              </fieldset>
-            </div>
-            <div className={safeStep === 1 ? "contents" : "hidden lg:contents"}>
-              <Field id="phone" label="Telefono" type="tel" value={form.phone} error={errors.phone} autoComplete="tel" placeholder="+39 3xx xxx xxxx" onChange={(value) => update("phone", value)} />
-              <Field id="email" label="Email" type="email" value={form.email} error={errors.email} autoComplete="email" placeholder="nome@email.com" onChange={(value) => update("email", value)} />
-            </div>
+              {errors.ageDeclaration ? <p id="ageDeclaration-error" className="mt-2 text-sm text-mint">{errors.ageDeclaration}</p> : null}
+            </fieldset>
           </div>
-        </div>
+        ) : null}
 
-        <section className={`${show("experience")} lg:border-t lg:border-white/10 lg:pt-2`}>
-          <StepHeading stepId="experience" currentId={currentStep.id} steps={steps} />
-          <fieldset className="mt-3 lg:mt-0 lg:flex lg:items-center lg:justify-between lg:gap-4" aria-describedby={errors.participatedLastYear ? "participatedLastYear-error" : undefined}>
-            <legend className="mb-4 text-sm font-medium text-white lg:mb-0">Hai partecipato allo staff l&apos;anno scorso?</legend>
-            <div>
-              <div className="grid grid-cols-2 gap-3 lg:w-[min(100%,280px)] lg:shrink-0">
-                <RadioOption id="participatedLastYear" name="participatedLastYear" checked={form.participatedLastYear === true} describedBy={errors.participatedLastYear ? "participatedLastYear-error" : undefined} onChange={() => update("participatedLastYear", true)}>Sì</RadioOption>
-                <RadioOption name="participatedLastYear" checked={form.participatedLastYear === false} describedBy={errors.participatedLastYear ? "participatedLastYear-error" : undefined} onChange={() => update("participatedLastYear", false)}>No</RadioOption>
-              </div>
+        {currentStep.id === "contacts" ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field id="phone" label="Telefono" type="tel" value={form.phone} error={errors.phone} autoComplete="tel" placeholder="+39 3xx xxx xxxx" onChange={(value) => update("phone", value)} />
+            <Field id="email" label="Email" type="email" value={form.email} error={errors.email} autoComplete="email" placeholder="nome@email.com" onChange={(value) => update("email", value)} />
+          </div>
+        ) : null}
+
+        {currentStep.id === "experience" ? (
+          <fieldset aria-describedby={errors.participatedLastYear ? "participatedLastYear-error" : undefined}>
+            <legend className="mb-4 text-sm font-medium text-white">Hai partecipato allo staff l&apos;anno scorso?</legend>
+            <div className="grid grid-cols-2 gap-3 sm:max-w-sm">
+              <RadioOption id="participatedLastYear" name="participatedLastYear" checked={form.participatedLastYear === true} describedBy={errors.participatedLastYear ? "participatedLastYear-error" : undefined} onChange={() => update("participatedLastYear", true)}>Sì</RadioOption>
+              <RadioOption name="participatedLastYear" checked={form.participatedLastYear === false} describedBy={errors.participatedLastYear ? "participatedLastYear-error" : undefined} onChange={() => update("participatedLastYear", false)}>No</RadioOption>
             </div>
-            {errors.participatedLastYear ? <p id="participatedLastYear-error" className="mt-2 basis-full text-sm text-mint">{errors.participatedLastYear}</p> : null}
+            {errors.participatedLastYear ? <p id="participatedLastYear-error" className="mt-2 text-sm text-mint">{errors.participatedLastYear}</p> : null}
           </fieldset>
-        </section>
+        ) : null}
 
-        <section className={`${show("role")} lg:min-h-[7.75rem] lg:overflow-visible lg:border-t lg:border-white/10 lg:pt-2`}>
-          <StepHeading stepId="role" currentId={currentStep.id} steps={steps} />
-          <SectionLabel title="Ruolo preferito" />
-          <fieldset className="mt-3 lg:mt-0">
+        {currentStep.id === "role" ? (
+          <fieldset>
             <legend className="sr-only">Ruolo che preferisci svolgere</legend>
-            <div className="grid grid-cols-2 gap-2 lg:grid-cols-12">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {STAFF_ROLES.map((role) => {
                 const locked = minor && isAdultOnlyRole(role.id);
                 const selected = form.role === role.id;
@@ -281,7 +258,7 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
                     checked={selected}
                     disabled={locked}
                     describedBy={errors.role ? "role-error" : undefined}
-                    className={`relative lg:col-span-4 ${locked ? "cursor-not-allowed border-white/10 bg-white/5 text-white/40" : selected ? "border-mint bg-mint text-navy shadow-[0_8px_24px_rgba(0,237,175,0.22)]" : "border-white/15 bg-white/5 text-white hover:border-mint/55"}`}
+                    className={locked ? "cursor-not-allowed border-white/10 bg-white/5 text-white/40" : selected ? "border-mint bg-mint text-navy shadow-[0_8px_24px_rgba(0,237,175,0.22)]" : "border-white/15 bg-white/5 text-white hover:border-mint/55"}
                     onChange={() => update("role", role.id)}
                   >
                     <span aria-hidden className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${selected && !locked ? "bg-navy/10" : "bg-white/10"}`}>
@@ -302,17 +279,17 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
               </p>
             ) : null}
           </fieldset>
-        </section>
+        ) : null}
 
-        {minor ? (
-          <section className={`${show("guardian")} lg:border-t lg:border-white/10 lg:pt-2`}>
-            <StepHeading stepId="guardian" currentId={currentStep.id} steps={steps} />
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {currentStep.id === "guardian" ? (
+          <section>
+            <div className="grid gap-3 sm:grid-cols-2">
               <Field id="guardianFirstName" label="Nome del genitore o tutore" value={form.guardianFirstName} error={errors.guardianFirstName} onChange={(value) => update("guardianFirstName", value)} />
               <Field id="guardianLastName" label="Cognome del genitore o tutore" value={form.guardianLastName} error={errors.guardianLastName} onChange={(value) => update("guardianLastName", value)} />
               <label className="block sm:col-span-2">
                 <span className="mb-1.5 block text-[13px] font-medium text-white/90">Rapporto</span>
                 <select
+                  id="guardianRelation"
                   value={form.guardianRelation}
                   onChange={(event) => update("guardianRelation", event.target.value as StaffFormInput["guardianRelation"])}
                   className="w-full rounded-2xl border border-transparent bg-white/95 px-4 py-3 text-[15px] text-navy outline-none focus:ring-2 focus:ring-mint"
@@ -350,9 +327,8 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
           </section>
         ) : null}
 
-        <section className={`${show("privacy")} lg:border-t lg:border-white/10 lg:pt-2`}>
-          <StepHeading stepId="privacy" currentId={currentStep.id} steps={steps} />
-          <div className="mt-3 flex flex-col gap-3">
+        {currentStep.id === "privacy" ? (
+          <div className="flex flex-col gap-3">
             <PolicyNoticeLinks minor={minor} />
             {uiAge === "underage" ? (
               <p className="rounded-2xl border border-mint/40 bg-mint/10 px-3 py-3 text-sm text-white">
@@ -408,20 +384,25 @@ export function StaffForm({ applicationsClosed = false }: { applicationsClosed?:
               </>
             )}
           </div>
-        </section>
+        ) : null}
       </div>
 
-      <button type="submit" disabled={pending} className="mt-4 hidden min-h-11 w-full shrink-0 rounded-2xl bg-mint px-5 py-2.5 font-display text-lg tracking-[0.2em] text-navy uppercase disabled:opacity-70 lg:mt-2 lg:flex lg:items-center lg:justify-center">
-        {pending ? "Invio in corso..." : filled ? "Invia candidatura" : "Completa e invia"}
-      </button>
-      <div className="mt-3 flex shrink-0 gap-3 lg:hidden">
+      <div className="mt-6 flex gap-3">
         {safeStep > 0 ? (
-          <button type="button" onClick={() => { setErrors({}); setStep((current) => Math.max(current - 1, 0)); }} className="min-h-11 rounded-2xl border border-white/20 px-4 py-3 text-sm font-semibold text-white">
+          <button
+            type="button"
+            onClick={() => {
+              setErrors({});
+              setSubmitError("");
+              setStep((current) => Math.max(current - 1, 0));
+            }}
+            className="min-h-11 rounded-2xl border border-white/20 px-4 py-3 text-sm font-semibold text-white"
+          >
             Indietro
           </button>
         ) : null}
         <button type="submit" disabled={pending} className="min-h-11 flex-1 rounded-2xl bg-mint px-5 py-3 font-display tracking-[0.16em] text-navy uppercase disabled:opacity-70">
-          {safeStep < steps.length - 1 ? "Avanti" : pending ? "Invio..." : "Invia"}
+          {lastStep ? (pending ? "Invio..." : "Invia") : "Avanti"}
         </button>
       </div>
     </form>
@@ -433,37 +414,6 @@ function linkedAdultPrivacy() {
     <>
       Ho letto l&apos;<DocLink href={POLICY_PATHS.privacy}>informativa privacy</DocLink> (versione {PRIVACY_VERSION}) e ne ho compreso i contenuti.
     </>
-  );
-}
-
-function isWideViewport() {
-  return window.matchMedia("(min-width: 1024px)").matches;
-}
-
-function SectionLabel({ title }: { title: string }) {
-  return (
-    <div className="mb-4 hidden lg:mb-1 lg:block">
-      <h2 className="text-[13px] font-semibold uppercase tracking-[0.18em] text-mint">{title}</h2>
-    </div>
-  );
-}
-
-function StepHeading({
-  stepId,
-  currentId,
-  steps,
-}: {
-  stepId: string;
-  currentId: string;
-  steps: ReturnType<typeof stepsFor>;
-}) {
-  const item = steps.find((step) => step.id === stepId);
-  if (!item) return null;
-  return (
-    <div className={currentId === stepId ? "lg:hidden" : "hidden"}>
-      <h1 className="font-display text-[1.65rem] tracking-[0.12em] text-white uppercase">{item.title}</h1>
-      <p className="mt-1 text-sm leading-5 text-white/75">{item.description}</p>
-    </div>
   );
 }
 
